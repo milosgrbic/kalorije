@@ -1,0 +1,168 @@
+/*
+ * Spisak namirnica — vrednosti na 100 g (ili 100 ml za tečnosti).
+ * Izvor: približne vrednosti iz USDA FoodData Central i deklaracija čestih proizvoda u Srbiji.
+ *
+ * Polja:
+ *   id      jedinstveni ključ (ne menjati posle dodavanja, koristi se za "nedavno")
+ *   name    naziv
+ *   cat     kategorija
+ *   unit    "g" ili "ml"
+ *   kcal, p (proteini), f (masti), c (ugljeni hidrati) — na 100 g / 100 ml
+ *   portion uobičajena porcija u g/ml (predlog kod unosa)
+ *   note    opis porcije (opciono)
+ *
+ * Novu namirnicu dodaj kao novi red na kraju odgovarajuće kategorije.
+ */
+window.FOODS = [
+  // Jaja i mlečni proizvodi
+  { id: "jaje", name: "Jaje (celo)", cat: "Jaja i mlečno", unit: "g", kcal: 143, p: 12.6, f: 9.5, c: 0.7, portion: 55, note: "1 jaje ≈ 55 g" },
+  { id: "belance", name: "Belance", cat: "Jaja i mlečno", unit: "g", kcal: 52, p: 10.9, f: 0.2, c: 0.7, portion: 33, note: "1 belance ≈ 33 g" },
+  { id: "zumance", name: "Žumance", cat: "Jaja i mlečno", unit: "g", kcal: 322, p: 15.9, f: 26.5, c: 3.6, portion: 17, note: "1 žumance ≈ 17 g" },
+  { id: "mleko28", name: "Mleko 2,8%", cat: "Jaja i mlečno", unit: "ml", kcal: 58, p: 3.2, f: 2.8, c: 4.7, portion: 250, note: "1 čaša = 250 ml" },
+  { id: "mleko15", name: "Mleko 1,5%", cat: "Jaja i mlečno", unit: "ml", kcal: 46, p: 3.3, f: 1.5, c: 4.8, portion: 250, note: "1 čaša = 250 ml" },
+  { id: "jogurt", name: "Jogurt 2,8%", cat: "Jaja i mlečno", unit: "ml", kcal: 60, p: 3.2, f: 2.8, c: 4.5, portion: 250 },
+  { id: "kiselomleko", name: "Kiselo mleko", cat: "Jaja i mlečno", unit: "g", kcal: 60, p: 3.2, f: 2.8, c: 4.3, portion: 180, note: "1 čaša ≈ 180 g" },
+  { id: "grckijogurt", name: "Grčki jogurt 10%", cat: "Jaja i mlečno", unit: "g", kcal: 133, p: 5, f: 10, c: 4, portion: 150 },
+  { id: "kefir", name: "Kefir", cat: "Jaja i mlečno", unit: "ml", kcal: 55, p: 3.3, f: 2.5, c: 4.5, portion: 250 },
+  { id: "pavlaka", name: "Kisela pavlaka 20%", cat: "Jaja i mlečno", unit: "g", kcal: 204, p: 2.7, f: 20, c: 3.5, portion: 30 },
+  { id: "kajmak", name: "Kajmak", cat: "Jaja i mlečno", unit: "g", kcal: 430, p: 4, f: 45, c: 2, portion: 30 },
+  { id: "mladisir", name: "Mladi sir (kravlji)", cat: "Jaja i mlečno", unit: "g", kcal: 98, p: 11, f: 4.3, c: 3.4, portion: 100 },
+  { id: "posnisir", name: "Posni sir / skyr", cat: "Jaja i mlečno", unit: "g", kcal: 72, p: 12.4, f: 0.3, c: 4, portion: 150 },
+  { id: "belisir", name: "Beli sir (kravlji, feta tip)", cat: "Jaja i mlečno", unit: "g", kcal: 264, p: 14, f: 21, c: 4, portion: 50 },
+  { id: "gauda", name: "Gauda / trapist", cat: "Jaja i mlečno", unit: "g", kcal: 356, p: 25, f: 27, c: 2.2, portion: 30, note: "1 parče ≈ 20–30 g" },
+  { id: "mocarela", name: "Mocarela", cat: "Jaja i mlečno", unit: "g", kcal: 280, p: 22, f: 21, c: 2.2, portion: 50 },
+  { id: "parmezan", name: "Parmezan", cat: "Jaja i mlečno", unit: "g", kcal: 431, p: 38, f: 29, c: 4.1, portion: 10 },
+  { id: "puter", name: "Puter", cat: "Jaja i mlečno", unit: "g", kcal: 717, p: 0.9, f: 81, c: 0.1, portion: 10 },
+
+  // Meso i riba
+  { id: "piletinafile", name: "Pileći file (sirov)", cat: "Meso i riba", unit: "g", kcal: 110, p: 23, f: 1.2, c: 0, portion: 150 },
+  { id: "piletinapecena", name: "Pileći file (pečen)", cat: "Meso i riba", unit: "g", kcal: 165, p: 31, f: 3.6, c: 0, portion: 120 },
+  { id: "pilecebatak", name: "Pileći batak sa kožom (pečen)", cat: "Meso i riba", unit: "g", kcal: 229, p: 24, f: 14, c: 0, portion: 120 },
+  { id: "curetina", name: "Ćureći file (sirov)", cat: "Meso i riba", unit: "g", kcal: 114, p: 23.6, f: 1.5, c: 0, portion: 150 },
+  { id: "junetina", name: "Junetina, but (sirova)", cat: "Meso i riba", unit: "g", kcal: 150, p: 21, f: 7, c: 0, portion: 150 },
+  { id: "mlevenojunece", name: "Mleveno juneće 10% masti", cat: "Meso i riba", unit: "g", kcal: 176, p: 20, f: 10, c: 0, portion: 150 },
+  { id: "mlevenomesano", name: "Mleveno mešano", cat: "Meso i riba", unit: "g", kcal: 250, p: 17, f: 20, c: 0, portion: 150 },
+  { id: "svinjskibut", name: "Svinjski but (sirov)", cat: "Meso i riba", unit: "g", kcal: 143, p: 21, f: 6, c: 0, portion: 150 },
+  { id: "svinjskivrat", name: "Svinjski vrat (sirov)", cat: "Meso i riba", unit: "g", kcal: 245, p: 17, f: 19.5, c: 0, portion: 150 },
+  { id: "cevapi", name: "Ćevapi (pečeni)", cat: "Meso i riba", unit: "g", kcal: 270, p: 18, f: 21, c: 2, portion: 200, note: "10 ćevapa ≈ 200 g" },
+  { id: "pljeskavica", name: "Pljeskavica (pečena)", cat: "Meso i riba", unit: "g", kcal: 275, p: 18, f: 22, c: 2, portion: 200 },
+  { id: "kobasica", name: "Kobasica (svinjska)", cat: "Meso i riba", unit: "g", kcal: 300, p: 13, f: 27, c: 1.5, portion: 100 },
+  { id: "pecenica", name: "Pečenica / šunka", cat: "Meso i riba", unit: "g", kcal: 120, p: 19, f: 4, c: 1.5, portion: 30, note: "2–3 parčeta ≈ 30 g" },
+  { id: "pileciprsa", name: "Pileća prsa (narezak)", cat: "Meso i riba", unit: "g", kcal: 100, p: 19, f: 1.5, c: 2, portion: 30 },
+  { id: "slanina", name: "Slanina", cat: "Meso i riba", unit: "g", kcal: 458, p: 13, f: 45, c: 1.4, portion: 30 },
+  { id: "kulen", name: "Kulen / čajna kobasica", cat: "Meso i riba", unit: "g", kcal: 440, p: 24, f: 38, c: 1, portion: 30 },
+  { id: "pasteta", name: "Pašteta (jetrena)", cat: "Meso i riba", unit: "g", kcal: 300, p: 12, f: 27, c: 3, portion: 50 },
+  { id: "tunjevina", name: "Tunjevina u salamuri (oceđena)", cat: "Meso i riba", unit: "g", kcal: 116, p: 26, f: 1, c: 0, portion: 80 },
+  { id: "tunjevinaulje", name: "Tunjevina u ulju (oceđena)", cat: "Meso i riba", unit: "g", kcal: 198, p: 29, f: 8, c: 0, portion: 80 },
+  { id: "losos", name: "Losos (sirov)", cat: "Meso i riba", unit: "g", kcal: 208, p: 20, f: 13, c: 0, portion: 150 },
+  { id: "oslic", name: "Oslić (sirov)", cat: "Meso i riba", unit: "g", kcal: 90, p: 18, f: 1.3, c: 0, portion: 150 },
+  { id: "sardina", name: "Sardine u ulju (oceđene)", cat: "Meso i riba", unit: "g", kcal: 208, p: 25, f: 11.5, c: 0, portion: 90 },
+  { id: "pastrmka", name: "Pastrmka (sirova)", cat: "Meso i riba", unit: "g", kcal: 141, p: 20, f: 6.2, c: 0, portion: 150 },
+
+  // Hleb, žitarice, testo
+  { id: "belihleb", name: "Beli hleb", cat: "Hleb i žitarice", unit: "g", kcal: 265, p: 9, f: 3.2, c: 49, portion: 40, note: "1 kriška ≈ 40 g" },
+  { id: "polubelihleb", name: "Polubeli hleb", cat: "Hleb i žitarice", unit: "g", kcal: 250, p: 9, f: 2.5, c: 47, portion: 40, note: "1 kriška ≈ 40 g" },
+  { id: "integralnihleb", name: "Integralni hleb", cat: "Hleb i žitarice", unit: "g", kcal: 247, p: 13, f: 3.4, c: 41, portion: 40, note: "1 kriška ≈ 40 g" },
+  { id: "tost", name: "Tost hleb", cat: "Hleb i žitarice", unit: "g", kcal: 270, p: 8.5, f: 4, c: 49, portion: 25, note: "1 parče ≈ 25 g" },
+  { id: "pogaca", name: "Pogača", cat: "Hleb i žitarice", unit: "g", kcal: 300, p: 8, f: 7, c: 51, portion: 80 },
+  { id: "kifla", name: "Kifla", cat: "Hleb i žitarice", unit: "g", kcal: 310, p: 9, f: 6, c: 54, portion: 60, note: "1 kifla ≈ 60 g" },
+  { id: "tortilja", name: "Tortilja (pšenična)", cat: "Hleb i žitarice", unit: "g", kcal: 310, p: 8, f: 8, c: 51, portion: 60 },
+  { id: "ovsene", name: "Ovsene pahuljice", cat: "Hleb i žitarice", unit: "g", kcal: 379, p: 13, f: 6.5, c: 68, portion: 50 },
+  { id: "musli", name: "Musli", cat: "Hleb i žitarice", unit: "g", kcal: 370, p: 10, f: 6, c: 66, portion: 50 },
+  { id: "kukuruzne", name: "Kukuruzne pahuljice", cat: "Hleb i žitarice", unit: "g", kcal: 357, p: 7.5, f: 0.4, c: 84, portion: 40 },
+  { id: "pirinac", name: "Pirinač (sirov)", cat: "Hleb i žitarice", unit: "g", kcal: 360, p: 6.6, f: 0.6, c: 80, portion: 70 },
+  { id: "pirinackuvan", name: "Pirinač (kuvan)", cat: "Hleb i žitarice", unit: "g", kcal: 130, p: 2.7, f: 0.3, c: 28, portion: 200 },
+  { id: "testenina", name: "Testenina (suva)", cat: "Hleb i žitarice", unit: "g", kcal: 371, p: 13, f: 1.5, c: 75, portion: 80 },
+  { id: "testeninakuvana", name: "Testenina (kuvana)", cat: "Hleb i žitarice", unit: "g", kcal: 158, p: 5.8, f: 0.9, c: 31, portion: 200 },
+  { id: "palenta", name: "Palenta / kukuruzni griz (suv)", cat: "Hleb i žitarice", unit: "g", kcal: 370, p: 8, f: 1.5, c: 79, portion: 60 },
+  { id: "brasno", name: "Pšenično brašno T-400", cat: "Hleb i žitarice", unit: "g", kcal: 364, p: 10, f: 1, c: 76, portion: 50 },
+  { id: "burek", name: "Burek sa sirom", cat: "Hleb i žitarice", unit: "g", kcal: 300, p: 9, f: 18, c: 26, portion: 250, note: "1 parče ≈ 250 g" },
+  { id: "burekmeso", name: "Burek sa mesom", cat: "Hleb i žitarice", unit: "g", kcal: 310, p: 10, f: 20, c: 23, portion: 250, note: "1 parče ≈ 250 g" },
+  { id: "pica", name: "Pica (kapričoza)", cat: "Hleb i žitarice", unit: "g", kcal: 250, p: 11, f: 10, c: 29, portion: 150, note: "1 parče ≈ 150 g" },
+
+  // Povrće
+  { id: "krompir", name: "Krompir (sirov)", cat: "Povrće", unit: "g", kcal: 77, p: 2, f: 0.1, c: 17, portion: 200 },
+  { id: "krompirpomfrit", name: "Pomfrit", cat: "Povrće", unit: "g", kcal: 312, p: 3.4, f: 15, c: 41, portion: 150 },
+  { id: "paradajz", name: "Paradajz", cat: "Povrće", unit: "g", kcal: 18, p: 0.9, f: 0.2, c: 3.9, portion: 120, note: "1 srednji ≈ 120 g" },
+  { id: "krastavac", name: "Krastavac", cat: "Povrće", unit: "g", kcal: 15, p: 0.7, f: 0.1, c: 3.6, portion: 150 },
+  { id: "paprika", name: "Paprika (babura)", cat: "Povrće", unit: "g", kcal: 26, p: 1, f: 0.3, c: 6, portion: 120 },
+  { id: "kupus", name: "Kupus", cat: "Povrće", unit: "g", kcal: 25, p: 1.3, f: 0.1, c: 5.8, portion: 150 },
+  { id: "kiselikupus", name: "Kiseli kupus", cat: "Povrće", unit: "g", kcal: 19, p: 0.9, f: 0.1, c: 4.3, portion: 150 },
+  { id: "salata", name: "Zelena salata", cat: "Povrće", unit: "g", kcal: 15, p: 1.4, f: 0.2, c: 2.9, portion: 80 },
+  { id: "sargarepa", name: "Šargarepa", cat: "Povrće", unit: "g", kcal: 41, p: 0.9, f: 0.2, c: 9.6, portion: 80 },
+  { id: "luk", name: "Crni luk", cat: "Povrće", unit: "g", kcal: 40, p: 1.1, f: 0.1, c: 9.3, portion: 70 },
+  { id: "beliluk", name: "Beli luk", cat: "Povrće", unit: "g", kcal: 149, p: 6.4, f: 0.5, c: 33, portion: 5, note: "1 čen ≈ 5 g" },
+  { id: "tikvica", name: "Tikvica", cat: "Povrće", unit: "g", kcal: 17, p: 1.2, f: 0.3, c: 3.1, portion: 200 },
+  { id: "patlidzan", name: "Plavi patlidžan", cat: "Povrće", unit: "g", kcal: 25, p: 1, f: 0.2, c: 5.9, portion: 200 },
+  { id: "brokoli", name: "Brokoli", cat: "Povrće", unit: "g", kcal: 34, p: 2.8, f: 0.4, c: 6.6, portion: 150 },
+  { id: "karfiol", name: "Karfiol", cat: "Povrće", unit: "g", kcal: 25, p: 1.9, f: 0.3, c: 5, portion: 150 },
+  { id: "spanac", name: "Spanać", cat: "Povrće", unit: "g", kcal: 23, p: 2.9, f: 0.4, c: 3.6, portion: 150 },
+  { id: "grasak", name: "Grašak", cat: "Povrće", unit: "g", kcal: 81, p: 5.4, f: 0.4, c: 14, portion: 150 },
+  { id: "boranija", name: "Boranija", cat: "Povrće", unit: "g", kcal: 31, p: 1.8, f: 0.2, c: 7, portion: 150 },
+  { id: "pasulj", name: "Pasulj (kuvan)", cat: "Povrće", unit: "g", kcal: 127, p: 8.7, f: 0.5, c: 23, portion: 250 },
+  { id: "socivo", name: "Sočivo (kuvano)", cat: "Povrće", unit: "g", kcal: 116, p: 9, f: 0.4, c: 20, portion: 200 },
+  { id: "leblebija", name: "Leblebija (kuvana)", cat: "Povrće", unit: "g", kcal: 164, p: 8.9, f: 2.6, c: 27, portion: 150 },
+  { id: "kukuruz", name: "Kukuruz šećerac (konzerva)", cat: "Povrće", unit: "g", kcal: 86, p: 3.3, f: 1.4, c: 19, portion: 80 },
+  { id: "pecurke", name: "Šampinjoni", cat: "Povrće", unit: "g", kcal: 22, p: 3.1, f: 0.3, c: 3.3, portion: 100 },
+  { id: "ajvar", name: "Ajvar", cat: "Povrće", unit: "g", kcal: 120, p: 1.5, f: 9, c: 8, portion: 40 },
+
+  // Voće
+  { id: "jabuka", name: "Jabuka", cat: "Voće", unit: "g", kcal: 52, p: 0.3, f: 0.2, c: 14, portion: 180, note: "1 srednja ≈ 180 g" },
+  { id: "banana", name: "Banana", cat: "Voće", unit: "g", kcal: 89, p: 1.1, f: 0.3, c: 23, portion: 120, note: "1 banana bez kore ≈ 120 g" },
+  { id: "pomorandza", name: "Pomorandža", cat: "Voće", unit: "g", kcal: 47, p: 0.9, f: 0.1, c: 12, portion: 150 },
+  { id: "mandarina", name: "Mandarina", cat: "Voće", unit: "g", kcal: 53, p: 0.8, f: 0.3, c: 13, portion: 80 },
+  { id: "kruska", name: "Kruška", cat: "Voće", unit: "g", kcal: 57, p: 0.4, f: 0.1, c: 15, portion: 170 },
+  { id: "sljiva", name: "Šljiva", cat: "Voće", unit: "g", kcal: 46, p: 0.7, f: 0.3, c: 11, portion: 150 },
+  { id: "jagoda", name: "Jagode", cat: "Voće", unit: "g", kcal: 32, p: 0.7, f: 0.3, c: 7.7, portion: 150 },
+  { id: "malina", name: "Maline", cat: "Voće", unit: "g", kcal: 52, p: 1.2, f: 0.7, c: 12, portion: 125 },
+  { id: "borovnica", name: "Borovnice", cat: "Voće", unit: "g", kcal: 57, p: 0.7, f: 0.3, c: 14, portion: 125 },
+  { id: "grozdje", name: "Grožđe", cat: "Voće", unit: "g", kcal: 69, p: 0.7, f: 0.2, c: 18, portion: 150 },
+  { id: "lubenica", name: "Lubenica", cat: "Voće", unit: "g", kcal: 30, p: 0.6, f: 0.2, c: 7.6, portion: 300 },
+  { id: "breskva", name: "Breskva", cat: "Voće", unit: "g", kcal: 39, p: 0.9, f: 0.3, c: 10, portion: 150 },
+  { id: "kivi", name: "Kivi", cat: "Voće", unit: "g", kcal: 61, p: 1.1, f: 0.5, c: 15, portion: 75 },
+  { id: "avokado", name: "Avokado", cat: "Voće", unit: "g", kcal: 160, p: 2, f: 15, c: 8.5, portion: 100 },
+  { id: "suvesljive", name: "Suve šljive", cat: "Voće", unit: "g", kcal: 240, p: 2.2, f: 0.4, c: 64, portion: 30 },
+
+  // Orašasti plodovi i semenke
+  { id: "orah", name: "Orah", cat: "Orašasto i semenke", unit: "g", kcal: 654, p: 15, f: 65, c: 14, portion: 30 },
+  { id: "badem", name: "Badem", cat: "Orašasto i semenke", unit: "g", kcal: 579, p: 21, f: 50, c: 22, portion: 30 },
+  { id: "lesnik", name: "Lešnik", cat: "Orašasto i semenke", unit: "g", kcal: 628, p: 15, f: 61, c: 17, portion: 30 },
+  { id: "kikiriki", name: "Kikiriki (pržen)", cat: "Orašasto i semenke", unit: "g", kcal: 585, p: 24, f: 50, c: 21, portion: 30 },
+  { id: "kikirikiputer", name: "Kikiriki puter", cat: "Orašasto i semenke", unit: "g", kcal: 588, p: 25, f: 50, c: 20, portion: 20, note: "1 kašika ≈ 15–20 g" },
+  { id: "suncokret", name: "Semenke suncokreta (oljuštene)", cat: "Orašasto i semenke", unit: "g", kcal: 584, p: 21, f: 51, c: 20, portion: 30 },
+  { id: "lan", name: "Laneno seme", cat: "Orašasto i semenke", unit: "g", kcal: 534, p: 18, f: 42, c: 29, portion: 10 },
+  { id: "chia", name: "Čija semenke", cat: "Orašasto i semenke", unit: "g", kcal: 486, p: 17, f: 31, c: 42, portion: 15 },
+
+  // Masti, ulja, namazi
+  { id: "suncokretulje", name: "Suncokretovo ulje", cat: "Ulja i namazi", unit: "ml", kcal: 828, p: 0, f: 92, c: 0, portion: 10, note: "1 kašika ≈ 10 ml" },
+  { id: "maslinovo", name: "Maslinovo ulje", cat: "Ulja i namazi", unit: "ml", kcal: 819, p: 0, f: 91, c: 0, portion: 10, note: "1 kašika ≈ 10 ml" },
+  { id: "mast", name: "Svinjska mast", cat: "Ulja i namazi", unit: "g", kcal: 902, p: 0, f: 100, c: 0, portion: 10 },
+  { id: "majonez", name: "Majonez", cat: "Ulja i namazi", unit: "g", kcal: 680, p: 1, f: 75, c: 0.6, portion: 15 },
+  { id: "kecap", name: "Kečap", cat: "Ulja i namazi", unit: "g", kcal: 112, p: 1.2, f: 0.1, c: 26, portion: 15 },
+  { id: "med", name: "Med", cat: "Ulja i namazi", unit: "g", kcal: 304, p: 0.3, f: 0, c: 82, portion: 20, note: "1 kašika ≈ 20 g" },
+  { id: "dzem", name: "Džem / pekmez", cat: "Ulja i namazi", unit: "g", kcal: 250, p: 0.4, f: 0.1, c: 62, portion: 20 },
+  { id: "eurokrem", name: "Eurokrem / čokoladni namaz", cat: "Ulja i namazi", unit: "g", kcal: 540, p: 6, f: 31, c: 58, portion: 20 },
+  { id: "secer", name: "Šećer", cat: "Ulja i namazi", unit: "g", kcal: 400, p: 0, f: 0, c: 100, portion: 5, note: "1 kašičica ≈ 5 g" },
+
+  // Slatkiši i grickalice
+  { id: "mlecnacokolada", name: "Mlečna čokolada", cat: "Slatkiši i grickalice", unit: "g", kcal: 535, p: 7.6, f: 30, c: 59, portion: 25 },
+  { id: "crnacokolada", name: "Crna čokolada 70%", cat: "Slatkiši i grickalice", unit: "g", kcal: 598, p: 7.8, f: 43, c: 46, portion: 25 },
+  { id: "keks", name: "Keks (petit beurre)", cat: "Slatkiši i grickalice", unit: "g", kcal: 440, p: 7.5, f: 12, c: 75, portion: 30 },
+  { id: "cips", name: "Čips", cat: "Slatkiši i grickalice", unit: "g", kcal: 536, p: 7, f: 35, c: 53, portion: 30 },
+  { id: "smoki", name: "Smoki / flips", cat: "Slatkiši i grickalice", unit: "g", kcal: 520, p: 13, f: 29, c: 51, portion: 50 },
+  { id: "sladoled", name: "Sladoled (vanila)", cat: "Slatkiši i grickalice", unit: "g", kcal: 207, p: 3.5, f: 11, c: 24, portion: 100 },
+  { id: "proteinbar", name: "Proteinska pločica", cat: "Slatkiši i grickalice", unit: "g", kcal: 360, p: 33, f: 12, c: 30, portion: 60 },
+  { id: "whey", name: "Whey protein (prah)", cat: "Slatkiši i grickalice", unit: "g", kcal: 390, p: 78, f: 6, c: 7, portion: 30, note: "1 merica ≈ 30 g" },
+
+  // Pića
+  { id: "voda", name: "Voda", cat: "Pića", unit: "ml", kcal: 0, p: 0, f: 0, c: 0, portion: 250 },
+  { id: "kafa", name: "Kafa (crna, bez šećera)", cat: "Pića", unit: "ml", kcal: 2, p: 0.1, f: 0, c: 0, portion: 100 },
+  { id: "sokpomorandza", name: "Sok od pomorandže 100%", cat: "Pića", unit: "ml", kcal: 45, p: 0.7, f: 0.2, c: 10.4, portion: 250 },
+  { id: "cedjena", name: "Ceđena pomorandža", cat: "Pića", unit: "ml", kcal: 45, p: 0.7, f: 0.2, c: 10.4, portion: 250 },
+  { id: "kola", name: "Kola / gazirani sok", cat: "Pića", unit: "ml", kcal: 42, p: 0, f: 0, c: 10.6, portion: 330 },
+  { id: "kolazero", name: "Kola zero", cat: "Pića", unit: "ml", kcal: 0.3, p: 0, f: 0, c: 0, portion: 330 },
+  { id: "pivo", name: "Pivo (lager)", cat: "Pića", unit: "ml", kcal: 43, p: 0.5, f: 0, c: 3.6, portion: 500 },
+  { id: "vinocrno", name: "Crno vino", cat: "Pića", unit: "ml", kcal: 85, p: 0.1, f: 0, c: 2.6, portion: 150 },
+  { id: "vinobelo", name: "Belo vino", cat: "Pića", unit: "ml", kcal: 82, p: 0.1, f: 0, c: 2.6, portion: 150 },
+  { id: "rakija", name: "Rakija (40%)", cat: "Pića", unit: "ml", kcal: 231, p: 0, f: 0, c: 0, portion: 50, note: "1 čašica ≈ 50 ml" }
+];
