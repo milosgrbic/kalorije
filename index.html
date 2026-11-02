@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1f5c3a">
+<meta name="apple-mobile-web-app-title" content="Kalorije">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>Kalorije</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -305,6 +309,28 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .btotal span { color: var(--muted); font-size: 0.85rem; }
 .btotal b { font-family: var(--display); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 .btotal small { grid-column: 1 / -1; color: var(--muted); font-variant-numeric: tabular-nums; }
+.srcs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; vertical-align: 2px;
+  background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag.mine { background: color-mix(in srgb, var(--ok) 22%, transparent); }
+.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.unitin { position: relative; }
+.unitin input { padding-right: 44px; }
+.unitin .u { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem; }
+.dup { color: var(--warn); font-size: 0.82rem; margin-top: 6px; }
+.dup:empty { display: none; }
+.missing { color: var(--muted); font-style: italic; }
+.acct { display: flex; flex-direction: column; gap: 8px; background: var(--bg); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 0.9rem; }
+.acct span { color: var(--muted); }
+.acct b { color: var(--ink); display: block; }
+.acct.in { flex-direction: row; align-items: center; }
+.acct.in span { flex: 1; min-width: 0; }
+.acct img { width: 40px; height: 40px; border-radius: 50%; flex: none; }
+.acct + .err { margin: -8px 0 12px; }
+.logincard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; font-size: 0.9rem; color: var(--muted); }
+.logincard span { flex: 1; min-width: 0; }
+.logincard b { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -360,6 +386,11 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       <p class="hint" id="hint">Cilj je privremeno 2.000 kcal. <button id="hintBtn">Popuni profil</button> da izračunamo tvoju potrošnju.</p>
     </section>
 
+    <div class="logincard" id="loginCard" hidden>
+      <span><b>Prijavi se</b> da vidiš zajedničke namirnice i jela i da ti obroci budu na svim uređajima.</span>
+      <button class="btn" data-login="1">Prijava</button>
+    </div>
+
     <section class="meals" id="meals" aria-label="Obroci"></section>
   </div>
 </main>
@@ -370,6 +401,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       <h2 id="sheetTitle">Moj profil</h2>
       <button class="x" id="closeProfile" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
+    <div id="account"></div>
     <form id="profileForm" novalidate>
       <div class="field">
         <span class="lbl">Pol</span>
@@ -380,7 +412,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       </div>
       <div class="row2">
         <div class="field"><label for="height">Visina (cm)</label><input id="height" type="number" inputmode="numeric" min="100" max="250" placeholder="180"></div>
-        <div class="field"><label for="weight">Težina (kg)</label><input id="weight" type="number" inputmode="decimal" step="0.1" min="30" max="300" placeholder="80"></div>
+        <div class="field"><label for="weight">Težina (kg)</label><input id="weight" type="text" inputmode="decimal" autocomplete="off" placeholder="80"></div>
       </div>
       <div class="field"><label for="dob">Datum rođenja</label><input id="dob" type="date"></div>
       <div class="field">
@@ -411,6 +443,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
+<script src="firebase-config.js"></script>
+<script src="db.js"></script>
 <script src="foods.js"></script>
 <script src="jela.js"></script>
 <script>
@@ -432,7 +466,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.days) return s; } catch (e) {}
     return { profile: null, days: {}, recent: [] };
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    KDB.savePersonal(state, [day]);
+  }
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function fmt(n) { return Math.round(n).toLocaleString("sr-RS"); }
@@ -611,7 +648,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var p = state.profile;
     if (p) {
       $(p.sex === "m" ? "sexM" : "sexF").checked = true;
-      $("height").value = p.height; $("weight").value = p.weight; $("dob").value = p.dob;
+      $("height").value = p.height; $("weight").value = String(p.weight).replace(".", ","); $("dob").value = p.dob;
       $("activity").value = String(p.activity);
       showResults(p);
     } else { $("results").innerHTML = ""; }
@@ -629,7 +666,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   $("profileForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var sex = (document.querySelector('input[name="sex"]:checked') || {}).value;
-    var h = parseFloat($("height").value), w = parseFloat($("weight").value), dob = $("dob").value;
+    var h = parseFloat($("height").value), w = parseFloat(String($("weight").value).replace(",", ".")), dob = $("dob").value;
     var err = "";
     if (!sex) err = "Izaberi pol.";
     else if (!(h >= 100 && h <= 250)) err = "Unesi visinu između 100 i 250 cm.";
@@ -657,14 +694,31 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
 
   // ---------- namirnice i jela ----------
-  var FOODS = window.FOODS || [];
-  var FOOD_BY_ID = {};
-  FOODS.forEach(function (f) { FOOD_BY_ID[f.id] = f; });
-  var BUILTIN_DISHES = window.JELA || [];
-  var BUILTIN_IDS = BUILTIN_DISHES.map(function (d) { return d.id; });
-  if (!state.dishes) state.dishes = [];
-  if (!state.hiddenDishes) state.hiddenDishes = [];
+  // Dve vrste: standardna lista (foods.js, jela.js — niko ne briše) i zajednička (KDB, od korisnika).
+  var STD_FOODS = (window.FOODS || []).map(function (f) { return Object.assign({ std: true }, f); });
+  var STD_DISHES = (window.JELA || []).map(function (d) { return Object.assign({ std: true }, d); });
+  var FOOD_BY_ID = {}, DISH_BY_ID = {};
+  delete state.dishes; delete state.hiddenDishes;
+  if (!state.recent) state.recent = [];
   if (!state.recentDishes) state.recentDishes = [];
+
+  function comFoods() { return (KDB.foods || []).slice().sort(byName); }
+  function comDishes() { return (KDB.dishes || []).slice().sort(byName); }
+  function byName(a, b) { return a.name.localeCompare(b.name, "sr"); }
+  function allFoods() { return STD_FOODS.concat(comFoods()); }
+  function allDishes() { return STD_DISHES.concat(comDishes()); }
+  function reindex() {
+    FOOD_BY_ID = {}; DISH_BY_ID = {};
+    allFoods().forEach(function (f) { FOOD_BY_ID[f.id] = f; });
+    allDishes().forEach(function (d) { DISH_BY_ID[d.id] = d; });
+  }
+  reindex();
+  function dishById(id) { return DISH_BY_ID[id] || null; }
+  function isMine(x) { return !x.std && KDB.isMine(x); }
+  function author(x) { return x.std ? "Standardna lista" : "Dodao/la: " + (KDB.isMine(x) ? "ti" : (x.createdByName || "korisnik")); }
+  var CATS = [];
+  STD_FOODS.forEach(function (f) { if (CATS.indexOf(f.cat) === -1) CATS.push(f.cat); });
+  CATS.push("Ostalo");
 
   function norm(s) {
     return String(s).toLowerCase().replace(/đ/g, "dj").replace(/[čć]/g, "c").replace(/š/g, "s").replace(/ž/g, "z")
@@ -674,16 +728,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var k = qty / 100;
     return { kcal: f.kcal * k, p: f.p * k, f: f.f * k, c: f.c * k };
   }
-  function allDishes() {
-    var own = {};
-    state.dishes.forEach(function (d) { own[d.id] = d; });
-    var list = [];
-    BUILTIN_DISHES.forEach(function (d) { if (state.hiddenDishes.indexOf(d.id) === -1) list.push(own[d.id] || d); });
-    state.dishes.forEach(function (d) { if (BUILTIN_IDS.indexOf(d.id) === -1) list.push(d); });
-    return list;
-  }
-  function dishById(id) { var all = allDishes(); for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i]; return null; }
-  function isMine(d) { return BUILTIN_IDS.indexOf(d.id) === -1; }
   function dishTotals(d) {
     var t = { kcal: 0, p: 0, f: 0, c: 0, n: 0 };
     d.items.forEach(function (x) {
@@ -693,10 +737,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     return t;
   }
 
-  var fs = {};
+  var fs = { view: null };
   function openFoods(mode, opts) {
     opts = opts || {};
-    fs = { mode: mode, meal: opts.meal || null, index: opts.index == null ? null : opts.index, view: "list", tab: "foods", query: "" };
+    fs = { mode: mode, meal: opts.meal || null, index: opts.index == null ? null : opts.index, view: "list", tab: "foods", src: "all", query: "" };
     if (mode === "edit") {
       var it = (state.days[day] || {})[fs.meal][fs.index];
       var dsh = it.dish && dishById(it.dish);
@@ -708,32 +752,37 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     document.body.style.overflow = "hidden";
     renderFoods(true);
   }
-  function closeFoods() { $("foodOverlay").hidden = true; document.body.style.overflow = ""; }
+  function closeFoods() { $("foodOverlay").hidden = true; document.body.style.overflow = ""; fs.view = null; }
   $("openFoods").onclick = function () { openFoods("browse"); };
   $("foodClose").onclick = closeFoods;
   $("foodOverlay").addEventListener("click", function (e) { if (e.target === this) closeFoods(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("foodOverlay").hidden) closeFoods(); });
   $("foodBack").onclick = function () {
-    if (fs.view === "builder" && fs.draft.back) { fs.view = "dish"; }
+    if (fs.view === "builder" && fs.draft.back) fs.view = "dish";
+    else if (fs.view === "foodform" && fs.fdraft.back) fs.view = "detail";
     else fs.view = "list";
     renderFoods(true);
   };
 
   function mealName(id) { for (var i = 0; i < MEALS.length; i++) if (MEALS[i].id === id) return MEALS[i].name; return ""; }
+  var ICON_SEARCH = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
+  var ICON_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
 
   function renderFoods(focus) {
     var body = $("foodBody");
-    var editingItem = fs.mode === "edit" && fs.view !== "builder";
+    var editingItem = fs.mode === "edit" && (fs.view === "detail" || fs.view === "dish");
     $("foodBack").hidden = fs.view === "list" || fs.view === "manual" || editingItem;
     if (fs.view === "list") {
       $("foodTitle").textContent = fs.mode === "pick" ? "Dodaj u " + mealName(fs.meal).toLowerCase() : "Namirnice i jela";
       body.innerHTML =
         '<div class="tabs" role="tablist">' +
-          '<button role="tab" data-tab="foods" aria-selected="' + (fs.tab === "foods") + '">Namirnice</button>' +
-          '<button role="tab" data-tab="dishes" aria-selected="' + (fs.tab === "dishes") + '">Jela</button>' +
+          '<button role="tab" data-tab="foods">Namirnice</button>' +
+          '<button role="tab" data-tab="dishes">Jela</button>' +
         '</div>' +
-        '<div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>' +
-        '<input id="foodSearch" type="search" autocomplete="off" value="' + esc(fs.query) + '"></div>' +
+        '<div class="search">' + ICON_SEARCH + '<input id="foodSearch" type="search" autocomplete="off" value="' + esc(fs.query) + '"></div>' +
+        '<div class="srcs" role="group" aria-label="Izvor">' +
+          '<button class="chip" data-src="all">Sve</button><button class="chip" data-src="std">Standardna lista</button><button class="chip" data-src="com">Od korisnika</button>' +
+        '</div>' +
         '<div id="foodList"></div>';
       var inp = $("foodSearch");
       inp.addEventListener("input", function () { fs.query = inp.value; renderList(); });
@@ -743,17 +792,19 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     } else if (fs.view === "detail") renderDetail();
     else if (fs.view === "dish") renderDish();
     else if (fs.view === "builder") renderBuilder();
+    else if (fs.view === "foodform") renderFoodForm();
     else renderManual();
   }
 
+  function tag(x) { return x.std ? "" : '<span class="tag' + (KDB.isMine(x) ? " mine" : "") + '">' + (KDB.isMine(x) ? "moje" : esc(x.createdByName || "korisnik")) + '</span>'; }
   function row(f) {
-    return '<li><button data-food="' + f.id + '"><span class="fn"><b>' + esc(f.name) + '</b><small>na 100 ' + f.unit +
+    return '<li><button data-food="' + esc(f.id) + '"><span class="fn"><b>' + esc(f.name) + tag(f) + '</b><small>na 100 ' + f.unit +
       ' · P ' + dec(f.p) + ' · M ' + dec(f.f) + ' · UH ' + dec(f.c) + '</small></span>' +
       '<span class="fk">' + fmt(f.kcal) + ' <small>kcal</small></span></button></li>';
   }
   function dishRow(d) {
     var t = dishTotals(d);
-    return '<li><button data-dish="' + d.id + '"><span class="fn"><b>' + esc(d.name) + '</b><small>' + t.n + (t.n === 1 ? " namirnica" : " namirnice") +
+    return '<li><button data-dish="' + esc(d.id) + '"><span class="fn"><b>' + esc(d.name) + tag(d) + '</b><small>' + t.n + (t.n === 1 ? " namirnica" : " namirnice") +
       ' · P ' + fmt(t.p) + ' · M ' + fmt(t.f) + ' · UH ' + fmt(t.c) + '</small></span>' +
       '<span class="fk">' + fmt(t.kcal) + ' <small>kcal</small></span></button></li>';
   }
@@ -761,43 +812,63 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var words = q.split(/\s+/);
     return function (text) { var n = norm(text); return words.every(function (w) { return n.indexOf(w) !== -1; }); };
   }
+  function ul(list, fn) { return '<ul class="flist">' + list.map(fn).join("") + '</ul>'; }
+  function addButton(kind) {
+    if (!KDB.canAdd()) return '<button class="btn ghost newdish" data-login="1">Prijavi se da bi dodavao ' + (kind === "food" ? "namirnice" : "jela") + '</button>';
+    return kind === "food"
+      ? '<button class="btn newdish" data-newfood="1">' + ICON_PLUS + 'Dodaj novu namirnicu</button>'
+      : '<button class="btn newdish" data-newdish="1">' + ICON_PLUS + 'Napravi novo jelo</button>';
+  }
 
   function renderList() {
+    if (!$("foodList")) return;
     var q = norm(fs.query.trim()), html = "";
-    var tabs = document.querySelectorAll("[data-tab]");
-    for (var i = 0; i < tabs.length; i++) tabs[i].setAttribute("aria-selected", tabs[i].getAttribute("data-tab") === fs.tab);
+    var b = document.querySelectorAll("[data-tab]");
+    for (var i = 0; i < b.length; i++) b[i].setAttribute("aria-selected", b[i].getAttribute("data-tab") === fs.tab);
+    b = document.querySelectorAll("[data-src]");
+    for (i = 0; i < b.length; i++) b[i].classList.toggle("on", b[i].getAttribute("data-src") === fs.src);
     $("foodSearch").placeholder = fs.tab === "foods" ? "Pretraži, npr. jaje, piletina, hleb" : "Pretraži jela";
+    var showStd = fs.src !== "com", showCom = fs.src !== "std";
+    var cloudWait = KDB.cloud && !KDB.user ? '<p class="noresult">Prijavi se (ikonica profila gore desno) da vidiš namirnice i jela koje su dodali drugi.</p>' : "";
+
     if (fs.tab === "foods") {
+      html += addButton("food");
+      var pool = (showStd ? STD_FOODS : []).concat(showCom ? comFoods() : []);
       if (q) {
         var m = matches(q);
-        var hits = FOODS.filter(function (f) { return m(f.name + " " + f.cat); });
+        var hits = pool.filter(function (f) { return m(f.name + " " + f.cat); });
         hits.sort(function (a, b) { return (norm(a.name).indexOf(q) === 0 ? 0 : 1) - (norm(b.name).indexOf(q) === 0 ? 0 : 1); });
-        html = hits.length ? '<ul class="flist">' + hits.map(row).join("") + '</ul>'
-          : '<p class="noresult">Nema namirnice „' + esc(fs.query) + '“. Dodaj je ručno u obroku, ili je upiši u foods.js.</p>';
+        html += hits.length ? ul(hits, row) : '<p class="noresult">Nema namirnice „' + esc(fs.query) + '“. Dodaj je dugmetom iznad.</p>';
       } else {
-        var recent = (state.recent || []).map(function (id) { return FOOD_BY_ID[id]; }).filter(Boolean);
-        if (recent.length) html += '<div class="group-h">Nedavno</div><ul class="flist">' + recent.map(row).join("") + '</ul>';
-        var cats = [];
-        FOODS.forEach(function (f) { if (cats.indexOf(f.cat) === -1) cats.push(f.cat); });
-        cats.forEach(function (c) {
-          html += '<div class="group-h">' + esc(c) + '</div><ul class="flist">' +
-            FOODS.filter(function (f) { return f.cat === c; }).map(row).join("") + '</ul>';
-        });
-        html += '<p class="src">Vrednosti su približne, na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
+        var recent = state.recent.map(function (id) { return FOOD_BY_ID[id]; }).filter(function (f) { return f && (f.std ? showStd : showCom); });
+        if (recent.length && fs.src === "all") html += '<div class="group-h">Nedavno</div>' + ul(recent, row);
+        if (showCom) {
+          var cf = comFoods();
+          html += '<div class="group-h">Od korisnika</div>' + (cf.length ? ul(cf, row) : cloudWait || '<p class="noresult">Još niko nije dodao namirnicu.</p>');
+        }
+        if (showStd) {
+          CATS.forEach(function (c) {
+            var inCat = STD_FOODS.filter(function (f) { return f.cat === c; });
+            if (inCat.length) html += '<div class="group-h">' + esc(c) + '</div>' + ul(inCat, row);
+          });
+          html += '<p class="src">Standardna lista: približne vrednosti na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
+        }
       }
     } else {
-      html += '<button class="btn newdish" data-newdish="1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Napravi novo jelo</button>';
-      var dishes = allDishes();
+      html += addButton("dish");
+      var dpool = (showStd ? STD_DISHES : []).concat(showCom ? comDishes() : []);
       if (q) {
         var md = matches(q);
-        var dh = dishes.filter(function (d) { return md(d.name); });
-        html += dh.length ? '<ul class="flist">' + dh.map(dishRow).join("") + '</ul>' : '<p class="noresult">Nema jela „' + esc(fs.query) + '“. Napravi ga dugmetom iznad.</p>';
+        var dh = dpool.filter(function (d) { return md(d.name); });
+        html += dh.length ? ul(dh, dishRow) : '<p class="noresult">Nema jela „' + esc(fs.query) + '“. Napravi ga dugmetom iznad.</p>';
       } else {
-        var rd = state.recentDishes.map(dishById).filter(Boolean);
-        if (rd.length) html += '<div class="group-h">Nedavno</div><ul class="flist">' + rd.map(dishRow).join("") + '</ul>';
-        var mine = dishes.filter(isMine), built = dishes.filter(function (d) { return !isMine(d); });
-        if (mine.length) html += '<div class="group-h">Moja jela</div><ul class="flist">' + mine.map(dishRow).join("") + '</ul>';
-        if (built.length) html += '<div class="group-h">Gotova jela</div><ul class="flist">' + built.map(dishRow).join("") + '</ul>';
+        var rd = state.recentDishes.map(dishById).filter(function (d) { return d && (d.std ? showStd : showCom); });
+        if (rd.length && fs.src === "all") html += '<div class="group-h">Nedavno</div>' + ul(rd, dishRow);
+        if (showCom) {
+          var cd = comDishes();
+          html += '<div class="group-h">Od korisnika</div>' + (cd.length ? ul(cd, dishRow) : cloudWait || '<p class="noresult">Još niko nije napravio jelo.</p>');
+        }
+        if (showStd) html += '<div class="group-h">Standardna lista</div>' + ul(STD_DISHES, dishRow);
         html += '<p class="src">Kalorije su za 1 porciju. Jelo je zbir namirnica, pa se računa samo.</p>';
       }
     }
@@ -807,11 +878,14 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   $("foodBody").addEventListener("click", function (e) {
     var t;
     if ((t = e.target.closest("[data-tab]"))) { fs.tab = t.getAttribute("data-tab"); fs.query = ""; $("foodSearch").value = ""; renderList(); return; }
+    if ((t = e.target.closest("[data-src]"))) { fs.src = t.getAttribute("data-src"); renderList(); return; }
+    if (e.target.closest("[data-login]")) { KDB.signIn(); return; }
     if ((t = e.target.closest("[data-food]"))) { fs.food = FOOD_BY_ID[t.getAttribute("data-food")]; fs.qty = fs.food.portion || 100; fs.view = "detail"; renderFoods(); return; }
     if ((t = e.target.closest("[data-dish]"))) { fs.dish = dishById(t.getAttribute("data-dish")); fs.portions = 1; fs.view = "dish"; renderFoods(); return; }
     if (e.target.closest("[data-newdish]")) { fs.draft = { id: null, name: "", items: [], back: false }; fs.view = "builder"; renderFoods(); return; }
+    if (e.target.closest("[data-newfood]")) { fs.fdraft = { id: null, name: fs.query.trim(), cat: "Ostalo", unit: "g", back: false }; fs.view = "foodform"; renderFoods(); return; }
     if ((t = e.target.closest("[data-qty]"))) { $("qtyIn").value = t.getAttribute("data-qty"); updateDetail(); return; }
-    if ((t = e.target.closest("[data-port]"))) { $("portIn").value = t.getAttribute("data-port"); updateDish(); return; }
+    if ((t = e.target.closest("[data-port]"))) { $("portIn").value = dec(+t.getAttribute("data-port")); updateDish(); return; }
     if ((t = e.target.closest("[data-bres]"))) {
       var f = FOOD_BY_ID[t.getAttribute("data-bres")];
       fs.draft.items.push([f.id, f.portion || 100]);
@@ -848,6 +922,18 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function editButtons(saveLabel) {
     return '<div class="addrow"><button class="btn" id="saveItem">' + saveLabel + '</button><button class="btn danger" id="delItem">Obriši</button></div>';
   }
+  // dugme koje traži drugi klik kao potvrdu
+  function confirmClick(el, label, fn) {
+    var armed = false;
+    el.onclick = function () {
+      if (!armed) { armed = true; el.textContent = label; return; }
+      el.disabled = true; fn();
+    };
+  }
+  function busy(btn, promise, err) {
+    btn.disabled = true;
+    return promise.catch(function (e) { btn.disabled = false; if (err) err.textContent = (e && e.message) || "Čuvanje nije uspelo. Pokušaj ponovo."; throw e; });
+  }
 
   // --- namirnica ---
   function renderDetail() {
@@ -857,11 +943,12 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     if (f.portion) chips.push(f.portion);
     [50, 100, 150, 200, 250].forEach(function (v) { if (chips.indexOf(v) === -1) chips.push(v); });
     chips.sort(function (a, b) { return a - b; });
+    var usedBy = allDishes().filter(function (d) { return d.items.some(function (x) { return x[0] === f.id; }); }).length;
     $("foodBody").innerHTML =
       '<div class="detail">' +
-        '<div class="cat">' + esc(f.cat) + (f.note ? " · " + esc(f.note) : "") + '</div>' +
+        '<div class="cat">' + esc(f.cat) + (f.note ? " · " + esc(f.note) : "") + '<br>' + esc(author(f)) + '</div>' +
         '<div class="field"><label for="qtyIn">Količina (' + (u === "ml" ? "mililitri" : "grami") + ')</label>' +
-          '<div class="qty"><div class="inwrap"><input id="qtyIn" type="number" inputmode="decimal" min="0" step="1" value="' + fs.qty + '"><span class="u">' + u + '</span></div></div></div>' +
+          '<div class="qty"><div class="inwrap"><input id="qtyIn" type="text" inputmode="decimal" autocomplete="off" value="' + fs.qty + '"><span class="u">' + u + '</span></div></div></div>' +
         '<div class="chips">' + chips.map(function (v) { return '<button class="chip" data-qty="' + v + '">' + v + ' ' + u + (v === f.portion ? " · porcija" : "") + '</button>'; }).join("") + '</div>' +
         macroBoxes() +
         (edit ? editButtons("Sačuvaj količinu") : '<div class="addrow">' + mealSelect() + '<button class="btn" id="addItem">Dodaj</button></div>') +
@@ -871,6 +958,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           '<tr><td>Masti</td><td>' + dec(f.f) + ' g</td></tr>' +
           '<tr><td>Ugljeni hidrati</td><td>' + dec(f.c) + ' g</td></tr>' +
         '</tbody></table>' +
+        (!edit && isMine(f) ? '<div class="addrow two"><button class="btn ghost" id="editFood">Izmeni namirnicu</button><button class="btn danger" id="delFood">Obriši namirnicu</button></div><p class="err" id="fErr"></p>' : "") +
       '</div>';
     $("qtyIn").addEventListener("input", updateDetail);
     if (edit) {
@@ -880,14 +968,27 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       $("addItem").onclick = function () {
         var q = num("qtyIn"); if (!q) return $("qtyIn").focus();
         addToMeal(itemFrom(f, q));
-        state.recent = [f.id].concat((state.recent || []).filter(function (id) { return id !== f.id; })).slice(0, 12);
+        state.recent = [f.id].concat(state.recent.filter(function (id) { return id !== f.id; })).slice(0, 12);
         finish();
       };
+      if (isMine(f)) {
+        $("editFood").onclick = function () {
+          fs.fdraft = { id: f.id, name: f.name, cat: f.cat, unit: f.unit, kcal: f.kcal, p: f.p, f: f.f, c: f.c, portion: f.portion, note: f.note, back: true };
+          fs.view = "foodform"; renderFoods();
+        };
+        if (usedBy) {
+          $("delFood").onclick = function () { $("fErr").textContent = "Ovu namirnicu koristi " + usedBy + (usedBy === 1 ? " jelo" : " jela") + ", pa ne može da se obriše. Možeš da je izmeniš."; };
+        } else {
+          confirmClick($("delFood"), "Sigurno obriši?", function () {
+            busy($("delFood"), KDB.deleteFood(f.id), $("fErr")).then(function () { fs.view = "list"; fs.tab = "foods"; renderFoods(); });
+          });
+        }
+      }
     }
     updateDetail();
     $("foodBody").scrollTop = 0;
   }
-  function num(id) { var q = parseFloat($(id).value); return q > 0 ? q : 0; }
+  function num(id) { var q = parseFloat(String($(id).value).replace(",", ".")); return q > 0 ? q : 0; }
   function itemFrom(f, q) {
     var m = macrosFor(f, q);
     return { food: f.id, name: f.name, qty: Math.round(q), unit: f.unit, kcal: Math.round(m.kcal), p: m.p, f: m.f, c: m.c };
@@ -898,25 +999,82 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     return h < 11 ? "dorucak" : h < 16 ? "rucak" : h < 21 ? "vecera" : "uzine";
   }
 
+  // --- nova / izmena namirnice ---
+  function renderFoodForm() {
+    var d = fs.fdraft;
+    $("foodTitle").textContent = d.id ? "Izmeni namirnicu" : "Nova namirnica";
+    function nf(id, label, val, unit) {
+      return '<div class="field"><label for="' + id + '">' + label + '</label><div class="inwrap unitin"><input id="' + id + '" type="text" inputmode="decimal" autocomplete="off" value="' + (val == null ? "" : val) + '"><span class="u">' + unit + '</span></div></div>';
+    }
+    $("foodBody").innerHTML =
+      '<form class="detail" id="ffForm" novalidate>' +
+        '<div class="field"><label for="ffName">Naziv</label><input id="ffName" autocomplete="off" placeholder="npr. Jogurt Moja Kravica 1,5%" value="' + esc(d.name || "") + '"><div class="dup" id="ffDup"></div></div>' +
+        '<div class="row2">' +
+          '<div class="field"><label for="ffCat">Kategorija</label><select id="ffCat">' + CATS.map(function (c) { return '<option' + (c === d.cat ? " selected" : "") + '>' + esc(c) + '</option>'; }).join("") + '</select></div>' +
+          '<div class="field"><label for="ffUnit">Meri se u</label><select id="ffUnit"><option value="g"' + (d.unit === "g" ? " selected" : "") + '>gramima (g)</option><option value="ml"' + (d.unit === "ml" ? " selected" : "") + '>mililitrima (ml)</option></select></div>' +
+        '</div>' +
+        '<div class="group-h" style="margin:4px 0 -6px">Vrednosti na 100 <span id="ffU">' + d.unit + '</span>, sa deklaracije</div>' +
+        nf("ffKcal", "Energija", d.kcal, "kcal") +
+        '<div class="row3">' + nf("ffP", "Proteini", d.p, "g") + nf("ffF", "Masti", d.f, "g") + nf("ffC", "Ugljeni h.", d.c, "g") + '</div>' +
+        '<div class="row2">' + nf("ffPortion", "Uobičajena porcija", d.portion, '<span class="ffU2">' + d.unit + '</span>') +
+          '<div class="field"><label for="ffNote">Opis porcije</label><input id="ffNote" placeholder="npr. 1 čaša" value="' + esc(d.note || "") + '"></div></div>' +
+        '<p class="err" id="ffErr"></p>' +
+        '<button class="btn" type="submit" id="ffSave">' + (d.id ? "Sačuvaj izmene" : "Dodaj u zajedničku bazu") + '</button>' +
+        (d.id ? "" : '<p class="src">Namirnica će biti vidljiva svima. Samo ti možeš da je izmeniš ili obrišeš.</p>') +
+      '</form>';
+    function dupCheck() {
+      var q = norm($("ffName").value.trim());
+      if (q.length < 3) { $("ffDup").textContent = ""; return; }
+      var m = matches(q);
+      var sim = allFoods().filter(function (f) { return f.id !== d.id && m(f.name); }).slice(0, 3);
+      $("ffDup").textContent = sim.length ? "Već postoji: " + sim.map(function (f) { return f.name; }).join(", ") : "";
+    }
+    $("ffName").addEventListener("input", dupCheck); dupCheck();
+    $("ffUnit").addEventListener("change", function () {
+      $("ffU").textContent = this.value; var u2 = document.querySelectorAll(".ffU2"); for (var i = 0; i < u2.length; i++) u2[i].textContent = this.value;
+    });
+    $("ffForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var v = function (id) { var x = parseFloat(String($(id).value).replace(",", ".")); return isNaN(x) ? null : x; };
+      var name = $("ffName").value.trim(), kcal = v("ffKcal");
+      var err = !name ? "Upiši naziv." : kcal == null || kcal < 0 ? "Upiši energiju (kcal na 100 " + $("ffUnit").value + ")." : "";
+      $("ffErr").textContent = err; if (err) return;
+      var food = { name: name, cat: $("ffCat").value, unit: $("ffUnit").value, kcal: kcal, p: v("ffP") || 0, f: v("ffF") || 0, c: v("ffC") || 0, portion: v("ffPortion") || 100 };
+      var note = $("ffNote").value.trim(); if (note) food.note = note;
+      if (d.id) food.id = d.id;
+      busy($("ffSave"), KDB.saveFood(food), $("ffErr")).then(function (id) {
+        reindex();
+        fs.food = FOOD_BY_ID[id] || Object.assign({ id: id, createdBy: KDB.myId() }, food);
+        fs.qty = fs.food.portion || 100; fs.view = "detail"; renderFoods();
+      });
+    });
+    if (!d.id && window.innerWidth > 640) $("ffName").focus();
+  }
+
   // --- jelo ---
   function renderDish() {
-    var d = fs.dish, edit = fs.mode === "edit";
+    var d = fs.dish, edit = fs.mode === "edit", mine = isMine(d);
     $("foodTitle").textContent = d.name;
     var rows = d.items.map(function (x) {
-      var f = FOOD_BY_ID[x[0]]; if (!f) return "";
+      var f = FOOD_BY_ID[x[0]]; if (!f) return '<tr><td colspan="3" class="missing">Namirnica više ne postoji</td></tr>';
       return '<tr><td>' + esc(f.name) + '</td><td>' + fmt(x[1]) + ' ' + f.unit + '</td><td>' + fmt(macrosFor(f, x[1]).kcal) + ' kcal</td></tr>';
     }).join("");
     var tot = dishTotals(d);
+    var actions = "";
+    if (!edit) {
+      if (mine) actions = '<div class="addrow two"><button class="btn ghost" id="editDish">Izmeni jelo</button><button class="btn danger" id="delDish">Obriši jelo</button></div>';
+      else if (KDB.canAdd()) actions = '<button class="btn ghost" id="copyDish">Napravi svoju verziju</button>';
+    }
     $("foodBody").innerHTML =
       '<div class="detail">' +
-        '<div class="cat">' + (isMine(d) ? "Moje jelo" : "Gotovo jelo") + ' · 1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
+        '<div class="cat">' + esc(author(d)) + ' · 1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
         '<div class="field"><label for="portIn">Broj porcija</label>' +
-          '<div class="qty"><div class="inwrap"><input id="portIn" type="number" inputmode="decimal" min="0" step="0.5" value="' + fs.portions + '"><span class="u">porc.</span></div></div></div>' +
+          '<div class="qty"><div class="inwrap"><input id="portIn" type="text" inputmode="decimal" autocomplete="off" value="' + dec(fs.portions) + '"><span class="u">porc.</span></div></div></div>' +
         '<div class="chips">' + [0.5, 1, 1.5, 2].map(function (v) { return '<button class="chip" data-port="' + v + '">' + dec(v) + '</button>'; }).join("") + '</div>' +
         macroBoxes() +
         (edit ? editButtons("Sačuvaj porcije") : '<div class="addrow">' + mealSelect() + '<button class="btn" id="addItem">Dodaj</button></div>') +
         '<table class="per100 ing"><thead><tr><th>Sastojci (1 porcija)</th><th></th><th></th></tr></thead><tbody>' + rows + '</tbody></table>' +
-        (edit ? "" : '<div class="addrow two"><button class="btn ghost" id="editDish">Izmeni jelo</button><button class="btn danger" id="delDish">Obriši jelo</button></div>') +
+        actions + '<p class="err" id="dErr"></p>' +
       '</div>';
     $("portIn").addEventListener("input", updateDish);
     if (edit) {
@@ -929,18 +1087,20 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         state.recentDishes = [d.id].concat(state.recentDishes.filter(function (id) { return id !== d.id; })).slice(0, 8);
         finish();
       };
-      $("editDish").onclick = function () {
-        fs.draft = { id: d.id, name: d.name, items: d.items.map(function (x) { return [x[0], x[1]]; }), back: true };
+      var copy = function (asNew) {
+        fs.draft = { id: asNew ? null : d.id, name: asNew ? d.name + " (moja verzija)" : d.name, items: d.items.filter(function (x) { return FOOD_BY_ID[x[0]]; }).map(function (x) { return [x[0], x[1]]; }), back: true };
         fs.view = "builder"; renderFoods();
       };
-      var armed = false;
-      $("delDish").onclick = function () {
-        if (!armed) { armed = true; this.textContent = "Sigurno obriši?"; return; }
-        state.dishes = state.dishes.filter(function (x) { return x.id !== d.id; });
-        if (!isMine(d) && state.hiddenDishes.indexOf(d.id) === -1) state.hiddenDishes.push(d.id);
-        state.recentDishes = state.recentDishes.filter(function (id) { return id !== d.id; });
-        save(); fs.view = "list"; fs.tab = "dishes"; renderFoods();
-      };
+      if ($("copyDish")) $("copyDish").onclick = function () { copy(true); };
+      if ($("editDish")) {
+        $("editDish").onclick = function () { copy(false); };
+        confirmClick($("delDish"), "Sigurno obriši?", function () {
+          busy($("delDish"), KDB.deleteDish(d.id), $("dErr")).then(function () {
+            state.recentDishes = state.recentDishes.filter(function (id) { return id !== d.id; });
+            save(); fs.view = "list"; fs.tab = "dishes"; renderFoods();
+          });
+        });
+      }
     }
     updateDish();
     $("foodBody").scrollTop = 0;
@@ -963,19 +1123,19 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         '<div class="field"><label for="bName">Naziv jela</label><input id="bName" placeholder="npr. Moj doručak" value="' + esc(dr.name) + '"></div>' +
         '<div><div class="group-h" style="margin-top:0">Sastojci za 1 porciju</div><ul class="ings" id="bItems"></ul></div>' +
         '<div class="field"><label for="bSearch">Dodaj namirnicu</label>' +
-          '<div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>' +
-          '<input id="bSearch" type="search" autocomplete="off" placeholder="Pretraži namirnice"></div>' +
+          '<div class="search">' + ICON_SEARCH + '<input id="bSearch" type="search" autocomplete="off" placeholder="Pretraži namirnice"></div>' +
           '<ul class="flist" id="bResults"></ul></div>' +
         '<div class="btotal" id="bTotal"></div>' +
         '<p class="err" id="bErr"></p>' +
-        '<button class="btn" id="bSave">Sačuvaj jelo</button>' +
+        '<button class="btn" id="bSave">' + (dr.id ? "Sačuvaj izmene" : "Sačuvaj jelo u zajedničku bazu") + '</button>' +
+        (dr.id ? "" : '<p class="src">Jelo će biti vidljivo svima. Samo ti možeš da ga izmeniš ili obrišeš.</p>') +
       '</div>';
     fs.bq = "";
     $("bName").addEventListener("input", function () { dr.name = this.value; });
     $("bSearch").addEventListener("input", function () { fs.bq = this.value; renderBuilderResults(); });
     $("bItems").addEventListener("input", function (e) {
       var i = e.target.getAttribute("data-bq"); if (i == null) return;
-      dr.items[+i][1] = parseFloat(e.target.value) || 0;
+      dr.items[+i][1] = parseFloat(String(e.target.value).replace(",", ".")) || 0;
       var f = FOOD_BY_ID[dr.items[+i][0]];
       e.target.closest("li").querySelector(".kc").textContent = fmt(macrosFor(f, dr.items[+i][1]).kcal) + " kcal";
       renderBuilderTotal();
@@ -984,10 +1144,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       var name = dr.name.trim(), items = dr.items.filter(function (x) { return x[1] > 0; });
       if (!name) { $("bErr").textContent = "Upiši naziv jela."; return $("bName").focus(); }
       if (!items.length) { $("bErr").textContent = "Dodaj bar jednu namirnicu sa količinom."; return $("bSearch").focus(); }
-      var d = { id: dr.id || ("u" + Date.now().toString(36)), name: name, items: items };
-      state.dishes = state.dishes.filter(function (x) { return x.id !== d.id; }).concat([d]);
-      save();
-      fs.dish = d; fs.portions = 1; fs.view = "dish"; renderFoods();
+      var d = { name: name, items: items };
+      if (dr.id) d.id = dr.id;
+      busy($("bSave"), KDB.saveDish(d), $("bErr")).then(function (id) {
+        reindex();
+        fs.dish = dishById(id) || Object.assign({ id: id, createdBy: KDB.myId() }, d);
+        fs.portions = 1; fs.view = "dish"; renderFoods();
+      });
     };
     renderBuilderParts();
     if (!dr.id && window.innerWidth > 640) $("bName").focus();
@@ -997,7 +1160,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("bItems").innerHTML = dr.items.length ? dr.items.map(function (x, i) {
       var f = FOOD_BY_ID[x[0]]; if (!f) return "";
       return '<li><span class="nm">' + esc(f.name) + '</span>' +
-        '<span class="inwrap"><input type="number" inputmode="decimal" min="0" data-bq="' + i + '" value="' + x[1] + '" aria-label="Količina ' + esc(f.name) + '"><span class="u">' + f.unit + '</span></span>' +
+        '<span class="inwrap"><input type="text" inputmode="decimal" autocomplete="off" data-bq="' + i + '" value="' + x[1] + '" aria-label="Količina ' + esc(f.name) + '"><span class="u">' + f.unit + '</span></span>' +
         '<span class="kc">' + fmt(macrosFor(f, x[1]).kcal) + ' kcal</span>' +
         '<button class="del" data-brm="' + i + '" aria-label="Ukloni ' + esc(f.name) + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>';
     }).join("") : '<li class="empty">Još nema sastojaka. Pretraži namirnicu ispod i dodaj je.</li>';
@@ -1008,10 +1171,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var q = norm((fs.bq || "").trim());
     if (!q) { $("bResults").innerHTML = ""; return; }
     var m = matches(q);
-    var hits = FOODS.filter(function (f) { return m(f.name + " " + f.cat); }).slice(0, 8);
+    var hits = allFoods().filter(function (f) { return m(f.name + " " + f.cat); }).slice(0, 8);
     $("bResults").innerHTML = hits.length ? hits.map(function (f) {
-      return '<li><button data-bres="' + f.id + '"><span class="fn"><b>' + esc(f.name) + '</b><small>' + fmt(f.kcal) + ' kcal na 100 ' + f.unit + '</small></span><span class="fk">+</span></button></li>';
-    }).join("") : '<li class="noresult">Nema rezultata.</li>';
+      return '<li><button data-bres="' + esc(f.id) + '"><span class="fn"><b>' + esc(f.name) + tag(f) + '</b><small>' + fmt(f.kcal) + ' kcal na 100 ' + f.unit + '</small></span><span class="fk">+</span></button></li>';
+    }).join("") : '<li class="noresult">Nema rezultata. Prvo je dodaj u Namirnice.</li>';
   }
   function renderBuilderTotal() {
     var t = dishTotals(fs.draft);
@@ -1038,6 +1201,62 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     });
     $("manDel").onclick = function () { removeItem(); finish(); };
   }
+
+  // ---------- nalog i sinhronizacija ----------
+  function renderAccount() {
+    var el = $("account"), html;
+    if (!KDB.cloud) {
+      html = '<div class="acct local"><b>Lokalni režim</b><span>Podaci su samo na ovom uređaju. Zajednička baza još nije povezana.</span></div>';
+    } else if (!KDB.ready) {
+      html = '<div class="acct"><span>Povezivanje sa bazom…</span></div>';
+    } else if (!KDB.user) {
+      html = '<div class="acct"><b>Prijava</b><span>Prijavi se da vidiš zajedničke namirnice i jela i da ti obroci budu sačuvani na svim uređajima.</span>' +
+        '<button class="btn google" data-login="1">Prijavi se preko Google-a</button></div>';
+    } else {
+      html = '<div class="acct in">' + (KDB.user.photo ? '<img src="' + esc(KDB.user.photo) + '" alt="" referrerpolicy="no-referrer">' : "") +
+        '<span><b>' + esc(KDB.user.name) + '</b>Obroci se čuvaju na tvom nalogu.</span><button class="btn ghost" id="logout">Odjavi se</button></div>';
+    }
+    if (KDB.error) html += '<p class="err">' + esc(KDB.error) + '</p>';
+    el.innerHTML = html;
+    if ($("logout")) $("logout").onclick = function () {
+      KDB.signOut().then(function () {
+        state = { profile: null, days: {}, recent: [], recentDishes: [] };
+        try { localStorage.removeItem(KEY); } catch (e) {}
+        render(); closeSheet();
+      });
+    };
+    var lc = $("loginCard");
+    lc.hidden = !(KDB.cloud && KDB.ready && !KDB.user);
+  }
+  document.addEventListener("click", function (e) { if (e.target.closest("#account [data-login], #loginCard [data-login]")) KDB.signIn(); });
+
+  var lastUid = null;
+  KDB.onChange(function (what) {
+    if (what === "auth") {
+      renderAccount();
+      var uid = KDB.user && KDB.user.uid;
+      if (uid && uid !== lastUid) {
+        lastUid = uid;
+        KDB.loadPersonal().then(function (cloud) {
+          if (cloud) {
+            state = cloud;
+          } else {
+            // prvi put na ovom nalogu: prebaci ono što je već uneto na ovom uređaju
+            KDB.savePersonal(state, Object.keys(state.days));
+          }
+          try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+          render();
+          if (!$("overlay").hidden && state.profile) openSheet();
+        }).catch(function (e) { KDB.error = e.message; renderAccount(); });
+      }
+      if (!uid) lastUid = null;
+    }
+    if (what === "community") {
+      reindex();
+      if (fs.view === "list") renderList();
+    }
+  });
+  renderAccount();
 
   render();
 })();
