@@ -6,6 +6,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 **Sajt:** https://milosgrbic.github.io/kalorije/
 
 ## Šta ima
+- **Prijava** korisničkim imenom (spisak u `korisnici.js`, bez šifre). U aplikaciji se vidi samo ime.
 - **Profil** (ikonica gore desno): pol, visina, težina, datum rođenja, aktivnost → BMI, bazalni metabolizam i dnevna potrošnja (Mifflin-St Jeor × faktor aktivnosti).
 - **Brzinomer**: unete kalorije u odnosu na dnevnu potrošnju, plus proteini, masti i UH.
 - **Obroci**: doručak, ručak, večera, užine, ostalo. Dodavanje iz liste (g ili ml) ili ručno.
@@ -18,7 +19,8 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 | `index.html` | cela aplikacija |
 | `foods.js` | standardna lista namirnica (na 100 g / 100 ml) |
 | `jela.js` | standardna lista jela |
-| `db.js` | čuvanje podataka: lokalno ili Firebase |
+| `korisnici.js` | spisak korisnika (otisci korisničkih imena, ne sama imena) |
+| `db.js` | prijava i čuvanje podataka: lokalno ili Firebase |
 | `firebase-config.js` | podešavanja baze (prazno = lokalni režim) |
 | `firestore.rules` | pravila ko sme šta u bazi |
 | `FIREBASE.md` | uputstvo za povezivanje baze |

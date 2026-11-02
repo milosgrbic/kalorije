@@ -328,6 +328,14 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .acct.in span { flex: 1; min-width: 0; }
 .acct img { width: 40px; height: 40px; border-radius: 50%; flex: none; }
 .acct + .err { margin: -8px 0 12px; }
+.login { position: fixed; inset: 0; z-index: 40; background: var(--brand); display: grid; place-items: center; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.login-card { width: 100%; max-width: 380px; background: var(--surface); border-radius: 22px; padding: 28px 22px; gap: 16px; }
+.login-card p { margin: 0; color: var(--muted); }
+.login-card p.err { color: var(--over); }
+.login-logo { font-family: var(--display); font-weight: 800; font-size: 2.2rem; letter-spacing: -0.02em; line-height: 1; color: var(--ink); }
+.login-logo span { color: var(--accent); }
+.ava { width: 40px; height: 40px; border-radius: 50%; flex: none !important; display: grid; place-items: center; background: var(--brand); color: var(--brand-ink) !important; font-family: var(--display); font-weight: 700; font-size: 1.1rem; }
 .logincard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; font-size: 0.9rem; color: var(--muted); }
 .logincard span { flex: 1; min-width: 0; }
 .logincard b { color: var(--ink); }
@@ -386,14 +394,20 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       <p class="hint" id="hint">Cilj je privremeno 2.000 kcal. <button id="hintBtn">Popuni profil</button> da izračunamo tvoju potrošnju.</p>
     </section>
 
-    <div class="logincard" id="loginCard" hidden>
-      <span><b>Prijavi se</b> da vidiš zajedničke namirnice i jela i da ti obroci budu na svim uređajima.</span>
-      <button class="btn" data-login="1">Prijava</button>
-    </div>
-
     <section class="meals" id="meals" aria-label="Obroci"></section>
   </div>
 </main>
+
+<div class="login" id="login" hidden>
+  <form class="login-card" id="loginForm" novalidate>
+    <div class="login-logo">kalorije<span>.</span></div>
+    <p>Dobrodošao/la. Upiši svoje korisničko ime da uđeš.</p>
+    <div class="field"><label for="username">Korisničko ime</label>
+      <input id="username" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="npr. Ime1234"></div>
+    <p class="err" id="loginErr"></p>
+    <button class="btn" type="submit" id="loginBtn">Uđi</button>
+  </form>
+</div>
 
 <div class="overlay" id="overlay" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -444,6 +458,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 </div>
 
 <script src="firebase-config.js"></script>
+<script src="korisnici.js"></script>
 <script src="db.js"></script>
 <script src="foods.js"></script>
 <script src="jela.js"></script>
@@ -457,17 +472,23 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     { id: "uzine",   name: "Užine",   icon: '<path d="M12 7c-3-3-8-1-8 4s3 9 5 9c1 0 2-.5 3-.5s2 .5 3 .5c2 0 5-4 5-9s-5-7-8-4zM12 7c0-2 1-4 3-4"/>' },
     { id: "ostalo",  name: "Ostalo",  icon: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' }
   ];
-  var KEY = "kalorije.v1";
-  var state = load();
+  var KEY_BASE = "kalorije.v1";
+  var state = emptyState();
   var day = todayKey();
   var openMeals = {};
 
-  function load() {
-    try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.days) return s; } catch (e) {}
-    return { profile: null, days: {}, recent: [] };
+  function emptyState() { return { profile: null, days: {}, recent: [], recentDishes: [] }; }
+  function fill(x) { x.days = x.days || {}; x.recent = x.recent || []; x.recentDishes = x.recentDishes || []; x.profile = x.profile || null; return x; }
+  function userKey() { return KEY_BASE + "." + KDB.user.id; }
+  function loadLocal() {
+    try { var x = JSON.parse(localStorage.getItem(userKey())); if (x && x.days) return fill(x); } catch (e) {}
+    // podaci uneti pre uvođenja prijave pripadaju prvom ko se prijavi na ovom uređaju
+    try { var o = JSON.parse(localStorage.getItem(KEY_BASE)); if (o && o.days) { localStorage.removeItem(KEY_BASE); return fill(o); } } catch (e) {}
+    return emptyState();
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    if (!KDB.user) return;
+    try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
     KDB.savePersonal(state, [day]);
   }
   function $(id) { return document.getElementById(id); }
@@ -568,7 +589,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("sLeftBox").classList.toggle("over", left < 0);
     $("hint").hidden = !!state.profile;
     $("profileDot").hidden = !!state.profile;
-    $("greet").textContent = state.profile ? "Tvoja dnevna potrošnja: " + fmt(g) + " kcal" : "Dnevni unos hrane";
+    $("greet").textContent = KDB.user ? "Zdravo, " + KDB.user.name + (state.profile ? " · cilj " + fmt(g) + " kcal" : "") : "Dnevni unos hrane";
     drawGauge(eaten, g);
     var mac = { p: 0, f: 0, c: 0 };
     MEALS.forEach(function (m) { (dayData()[m.id] || []).forEach(function (it) { mac.p += it.p || 0; mac.f += it.f || 0; mac.c += it.c || 0; }); });
@@ -651,7 +672,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       $("height").value = p.height; $("weight").value = String(p.weight).replace(".", ","); $("dob").value = p.dob;
       $("activity").value = String(p.activity);
       showResults(p);
-    } else { $("results").innerHTML = ""; }
+    } else {
+      $("results").innerHTML = "";
+      $("profileForm").reset();
+    }
     $("err").textContent = "";
     $("overlay").hidden = false;
     document.body.style.overflow = "hidden";
@@ -814,7 +838,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   }
   function ul(list, fn) { return '<ul class="flist">' + list.map(fn).join("") + '</ul>'; }
   function addButton(kind) {
-    if (!KDB.canAdd()) return '<button class="btn ghost newdish" data-login="1">Prijavi se da bi dodavao ' + (kind === "food" ? "namirnice" : "jela") + '</button>';
+    if (!KDB.canAdd()) return "";
     return kind === "food"
       ? '<button class="btn newdish" data-newfood="1">' + ICON_PLUS + 'Dodaj novu namirnicu</button>'
       : '<button class="btn newdish" data-newdish="1">' + ICON_PLUS + 'Napravi novo jelo</button>';
@@ -829,7 +853,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     for (i = 0; i < b.length; i++) b[i].classList.toggle("on", b[i].getAttribute("data-src") === fs.src);
     $("foodSearch").placeholder = fs.tab === "foods" ? "Pretraži, npr. jaje, piletina, hleb" : "Pretraži jela";
     var showStd = fs.src !== "com", showCom = fs.src !== "std";
-    var cloudWait = KDB.cloud && !KDB.user ? '<p class="noresult">Prijavi se (ikonica profila gore desno) da vidiš namirnice i jela koje su dodali drugi.</p>' : "";
+    var cloudWait = "";
 
     if (fs.tab === "foods") {
       html += addButton("food");
@@ -879,7 +903,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var t;
     if ((t = e.target.closest("[data-tab]"))) { fs.tab = t.getAttribute("data-tab"); fs.query = ""; $("foodSearch").value = ""; renderList(); return; }
     if ((t = e.target.closest("[data-src]"))) { fs.src = t.getAttribute("data-src"); renderList(); return; }
-    if (e.target.closest("[data-login]")) { KDB.signIn(); return; }
     if ((t = e.target.closest("[data-food]"))) { fs.food = FOOD_BY_ID[t.getAttribute("data-food")]; fs.qty = fs.food.portion || 100; fs.view = "detail"; renderFoods(); return; }
     if ((t = e.target.closest("[data-dish]"))) { fs.dish = dishById(t.getAttribute("data-dish")); fs.portions = 1; fs.view = "dish"; renderFoods(); return; }
     if (e.target.closest("[data-newdish]")) { fs.draft = { id: null, name: "", items: [], back: false }; fs.view = "builder"; renderFoods(); return; }
@@ -1202,54 +1225,51 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("manDel").onclick = function () { removeItem(); finish(); };
   }
 
-  // ---------- nalog i sinhronizacija ----------
+  // ---------- prijava, nalog i sinhronizacija ----------
   function renderAccount() {
-    var el = $("account"), html;
-    if (!KDB.cloud) {
-      html = '<div class="acct local"><b>Lokalni režim</b><span>Podaci su samo na ovom uređaju. Zajednička baza još nije povezana.</span></div>';
-    } else if (!KDB.ready) {
-      html = '<div class="acct"><span>Povezivanje sa bazom…</span></div>';
-    } else if (!KDB.user) {
-      html = '<div class="acct"><b>Prijava</b><span>Prijavi se da vidiš zajedničke namirnice i jela i da ti obroci budu sačuvani na svim uređajima.</span>' +
-        '<button class="btn google" data-login="1">Prijavi se preko Google-a</button></div>';
-    } else {
-      html = '<div class="acct in">' + (KDB.user.photo ? '<img src="' + esc(KDB.user.photo) + '" alt="" referrerpolicy="no-referrer">' : "") +
-        '<span><b>' + esc(KDB.user.name) + '</b>Obroci se čuvaju na tvom nalogu.</span><button class="btn ghost" id="logout">Odjavi se</button></div>';
+    var html = "";
+    if (KDB.user) {
+      html = '<div class="acct in"><span class="ava">' + esc(KDB.user.name.charAt(0)) + '</span><span><b>' + esc(KDB.user.name) + '</b>' +
+        (KDB.cloud ? "Obroci se čuvaju na tvom nalogu." : "Lokalni režim: podaci su samo na ovom uređaju.") +
+        '</span><button class="btn ghost" id="logout">Odjavi se</button></div>';
     }
     if (KDB.error) html += '<p class="err">' + esc(KDB.error) + '</p>';
-    el.innerHTML = html;
-    if ($("logout")) $("logout").onclick = function () {
-      KDB.signOut().then(function () {
-        state = { profile: null, days: {}, recent: [], recentDishes: [] };
-        try { localStorage.removeItem(KEY); } catch (e) {}
-        render(); closeSheet();
-      });
-    };
-    var lc = $("loginCard");
-    lc.hidden = !(KDB.cloud && KDB.ready && !KDB.user);
+    $("account").innerHTML = html;
+    if ($("logout")) $("logout").onclick = function () { this.disabled = true; KDB.logout(); };
+    $("login").hidden = !KDB.ready || !!KDB.user;
+    if (!$("login").hidden) { $("loginBtn").disabled = false; if (KDB.error) $("loginErr").textContent = KDB.error; }
   }
-  document.addEventListener("click", function (e) { if (e.target.closest("#account [data-login], #loginCard [data-login]")) KDB.signIn(); });
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    $("loginErr").textContent = ""; $("loginBtn").disabled = true; $("loginBtn").textContent = "Ulazim…";
+    KDB.login($("username").value).then(function () {
+      $("username").value = "";
+    }, function (err) {
+      $("loginErr").textContent = err.message;
+    }).then(function () { $("loginBtn").disabled = false; $("loginBtn").textContent = "Uđi"; });
+  });
 
   var lastUid = null;
   KDB.onChange(function (what) {
     if (what === "auth") {
-      renderAccount();
       var uid = KDB.user && KDB.user.uid;
       if (uid && uid !== lastUid) {
         lastUid = uid;
+        state = loadLocal(); day = todayKey(); openMeals = {};
+        render();
         KDB.loadPersonal().then(function (cloud) {
-          if (cloud) {
-            state = cloud;
-          } else {
-            // prvi put na ovom nalogu: prebaci ono što je već uneto na ovom uređaju
-            KDB.savePersonal(state, Object.keys(state.days));
-          }
-          try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+          if (KDB.myId() !== uid) return;
+          if (cloud) state = fill(cloud);
+          else if (KDB.cloud) KDB.savePersonal(state, Object.keys(state.days)); // prvi put: prebaci uneto na ovom uređaju
+          try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
           render();
-          if (!$("overlay").hidden && state.profile) openSheet();
         }).catch(function (e) { KDB.error = e.message; renderAccount(); });
       }
-      if (!uid) lastUid = null;
+      if (!uid && lastUid) {
+        lastUid = null; state = emptyState(); openMeals = {};
+        closeSheet(); closeFoods(); render();
+      }
+      renderAccount();
     }
     if (what === "community") {
       reindex();

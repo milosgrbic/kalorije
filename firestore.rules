@@ -4,7 +4,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function signedIn() { return request.auth != null; }
+    // Prijavljen korisnik sa nalogom koji je napravio admin (<id>@kalorije.app)
+    function signedIn() {
+      return request.auth != null && request.auth.token.email.matches('.*@kalorije[.]app$');
+    }
     function ownsNew() { return request.resource.data.createdBy == request.auth.uid; }
     function ownsOld() { return resource.data.createdBy == request.auth.uid; }
 
