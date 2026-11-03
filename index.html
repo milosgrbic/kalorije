@@ -27,6 +27,7 @@
   --brand-ink: #f2f7f1;
   --accent: #e0a526;
   --track: #dde5dc;
+  --c-p: #3d82d6; --c-c: #e2a91f; --c-f: #d6453a;
   --over: #c4442f;
   --ok: #2f8a4f;
   --warn: #c98a12;
@@ -229,8 +230,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
 .mac { font-size: 0.82rem; color: var(--muted); }
 .mac b { color: var(--ink); font-variant-numeric: tabular-nums; }
-.mac i { display: block; height: 4px; border-radius: 2px; margin-bottom: 5px; }
-.mac.p i { background: #4f8fd1; } .mac.f i { background: var(--accent); } .mac.c i { background: #8a6fd0; }
+.mac { display: flex; align-items: center; gap: 6px; justify-content: center; white-space: nowrap; }
+.mac i, .mbox i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.p i { background: var(--c-p); } .c i { background: var(--c-c); } .f i { background: var(--c-f); }
 
 /* meal items + actions */
 .items li { cursor: pointer; }
@@ -290,8 +292,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .mbox { background: var(--bg); border-radius: 12px; padding: 10px 12px; }
 .mbox small { display: block; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .mbox b { font-family: var(--display); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
-.mbox i { display: block; height: 4px; border-radius: 2px; margin-top: 6px; }
-.mbox.p i { background: #4f8fd1; } .mbox.f i { background: var(--accent); } .mbox.c i { background: #8a6fd0; }
+.mbox small { display: flex !important; align-items: center; gap: 6px; }
+.split { display: flex; flex-direction: column; gap: 6px; margin-top: -4px; }
+.split-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; }
+.split-bar .p { background: var(--c-p); } .split-bar .c { background: var(--c-c); } .split-bar .f { background: var(--c-f); }
+.split-l { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.split-l span { display: flex; align-items: center; gap: 5px; }
+.split-l i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .per100 { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
 .per100 th, .per100 td { padding: 7px 0; border-bottom: 1px solid var(--line); text-align: left; }
 .per100 td:last-child, .per100 th:last-child { text-align: right; }
@@ -400,8 +407,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       </div>
       <div class="macros">
         <div class="mac p"><i></i>Proteini <b id="mP">0 g</b></div>
-        <div class="mac f"><i></i>Masti <b id="mF">0 g</b></div>
         <div class="mac c"><i></i>UH <b id="mC">0 g</b></div>
+        <div class="mac f"><i></i>Masti <b id="mF">0 g</b></div>
       </div>
       <p class="hint" id="hint">Cilj je privremeno 2.000 kcal. <button id="hintBtn">Popuni profil</button> da izračunamo tvoju potrošnju.</p>
     </section>
@@ -623,7 +630,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         if (items.length) {
           html += '<ul class="items">';
           items.forEach(function (it, i) {
-            var sub = it.food || it.dish ? (it.dish ? "jelo · " + dec(it.qty) + " porc." : fmt(it.qty) + " " + it.unit) + " · P " + dec(it.p) + " · M " + dec(it.f) + " · UH " + dec(it.c) : "ručni unos";
+            var sub = it.food || it.dish ? (it.dish ? "jelo · " + dec(it.qty) + " porc." : fmt(it.qty) + " " + it.unit) + " · P " + dec(it.p) + " · UH " + dec(it.c) + " · M " + dec(it.f) : "ručni unos";
             html += '<li data-edit="' + m.id + ':' + i + '"><span class="nm">' + esc(it.name) + '<small>' + sub + '</small></span><span class="kc">' + fmt(it.kcal) + ' kcal</span>' +
               '<button class="del" data-del="' + m.id + ':' + i + '" aria-label="Obriši ' + esc(it.name) + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></li>';
           });
@@ -645,7 +652,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
   $("meals").addEventListener("click", function (e) {
     var t = e.target.closest("[data-toggle]");
-    if (t) { var id = t.getAttribute("data-toggle"); openMeals[id] = !openMeals[id]; render(); return; }
+    if (t) { var id = t.getAttribute("data-toggle"); var was = !!openMeals[id]; openMeals = {}; if (!was) openMeals[id] = true; render(); return; }
     var pk = e.target.closest("[data-pick]");
     if (pk) { openFoods("pick", { meal: pk.getAttribute("data-pick") }); return; }
     var d = e.target.closest("[data-del]");
@@ -835,13 +842,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function tag(x) { return x.std ? "" : '<span class="tag' + (KDB.isMine(x) ? " mine" : "") + '">' + (KDB.isMine(x) ? "moje" : esc(x.createdByName || "korisnik")) + '</span>'; }
   function row(f) {
     return '<li><button data-food="' + esc(f.id) + '"><span class="fn"><b>' + esc(f.name) + tag(f) + '</b><small>na 100 ' + f.unit +
-      ' · P ' + dec(f.p) + ' · M ' + dec(f.f) + ' · UH ' + dec(f.c) + '</small></span>' +
+      ' · P ' + dec(f.p) + ' · UH ' + dec(f.c) + ' · M ' + dec(f.f) + '</small></span>' +
       '<span class="fk">' + fmt(f.kcal) + ' <small>kcal</small></span></button></li>';
   }
   function dishRow(d) {
     var t = dishTotals(d);
     return '<li><button data-dish="' + esc(d.id) + '"><span class="fn"><b>' + esc(d.name) + tag(d) + '</b><small>' + t.n + (t.n === 1 ? " namirnica" : " namirnice") +
-      ' · P ' + fmt(t.p) + ' · M ' + fmt(t.f) + ' · UH ' + fmt(t.c) + '</small></span>' +
+      ' · P ' + fmt(t.p) + ' · UH ' + fmt(t.c) + ' · M ' + fmt(t.f) + '</small></span>' +
       '<span class="fk">' + fmt(t.kcal) + ' <small>kcal</small></span></button></li>';
   }
   function matches(q) {
@@ -913,7 +920,11 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           });
           html += '<p class="src">Standardna lista: približne vrednosti na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
         } else {
-          html += '<div class="group-h">Standardna lista</div>' + ul(STD_DISHES, dishRow);
+          var dcats = [];
+          STD_DISHES.forEach(function (d) { var c = d.cat || "Standardna lista"; if (dcats.indexOf(c) === -1) dcats.push(c); });
+          dcats.forEach(function (c) {
+            html += '<div class="group-h">' + esc(c) + '</div>' + ul(STD_DISHES.filter(function (d) { return (d.cat || "Standardna lista") === c; }), dishRow);
+          });
         }
       }
       if (!foods) html += '<p class="src">Kalorije su za 1 porciju. Jelo je zbir namirnica, pa se računa samo.</p>';
@@ -947,9 +958,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function macroBoxes() {
     return '<div class="big"><b id="dKcal">0</b><span>kcal</span></div>' +
       '<div class="mgrid">' +
-        '<div class="mbox p"><small>Proteini</small><b id="dP">0</b> g<i></i></div>' +
-        '<div class="mbox f"><small>Masti</small><b id="dF">0</b> g<i></i></div>' +
-        '<div class="mbox c"><small>Ugljeni h.</small><b id="dC">0</b> g<i></i></div>' +
+        '<div class="mbox p"><small><i></i>Proteini</small><b id="dP">0</b> g</div>' +
+        '<div class="mbox c"><small><i></i>Ugljeni h.</small><b id="dC">0</b> g</div>' +
+        '<div class="mbox f"><small><i></i>Masti</small><b id="dF">0</b> g</div>' +
       '</div>';
   }
   function showMacros(m) {
@@ -959,7 +970,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var meal = $("mealSel").value;
     state.days[day] = state.days[day] || {};
     (state.days[day][meal] = state.days[day][meal] || []).push(item);
-    openMeals[meal] = true;
+    openMeals = {}; openMeals[meal] = true;
   }
   function replaceItem(item) { state.days[day][fs.meal][fs.index] = item; }
   function removeItem() { state.days[day][fs.meal].splice(fs.index, 1); }
@@ -1000,8 +1011,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         '<table class="per100"><thead><tr><th>Na 100 ' + u + '</th><th></th></tr></thead><tbody>' +
           '<tr><td>Energija</td><td>' + fmt(f.kcal) + ' kcal</td></tr>' +
           '<tr><td>Proteini</td><td>' + dec(f.p) + ' g</td></tr>' +
-          '<tr><td>Masti</td><td>' + dec(f.f) + ' g</td></tr>' +
           '<tr><td>Ugljeni hidrati</td><td>' + dec(f.c) + ' g</td></tr>' +
+          '<tr><td>Masti</td><td>' + dec(f.f) + ' g</td></tr>' +
         '</tbody></table>' +
         (!edit && isMine(f) ? '<div class="addrow two"><button class="btn ghost" id="editFood">Izmeni namirnicu</button><button class="btn danger" id="delFood">Obriši namirnicu</button></div><p class="err" id="fErr"></p>' : "") +
       '</div>';
@@ -1110,7 +1121,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }
     $("foodBody").innerHTML =
       '<div class="detail">' +
-        '<div class="cat">' + esc(author(d)) + ' · 1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
+        '<div class="cat">' + esc(author(d)) + (d.cat ? " · " + esc(d.cat) : "") + ' · 1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
+        splitBar(tot) +
         '<div class="field"><label for="portIn">Broj porcija</label>' +
           '<div class="qty"><div class="inwrap"><input id="portIn" type="text" inputmode="decimal" autocomplete="off" value="' + dec(fs.portions) + '"><span class="u">porc.</span></div></div></div>' +
         '<div class="chips">' + [0.5, 1, 1.5, 2].map(function (v) { return '<button class="chip" data-port="' + v + '">' + dec(v) + '</button>'; }).join("") + '</div>' +
@@ -1147,6 +1159,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }
     updateDish();
     $("foodBody").scrollTop = 0;
+  }
+  // udeo energije iz proteina / UH / masti
+  function splitBar(t) {
+    var e = 4 * t.p + 4 * t.c + 9 * t.f; if (!e) return "";
+    var pp = Math.round(4 * t.p / e * 100), pc = Math.round(4 * t.c / e * 100), pf = 100 - pp - pc;
+    return '<div class="split"><div class="split-bar"><span class="p" style="width:' + pp + '%"></span><span class="c" style="width:' + pc + '%"></span><span class="f" style="width:' + pf + '%"></span></div>' +
+      '<div class="split-l"><span class="p"><i></i>Proteini ' + pp + '%</span><span class="c"><i></i>UH ' + pc + '%</span><span class="f"><i></i>Masti ' + pf + '%</span></div></div>';
   }
   function dishItem(d, q) {
     var t = dishTotals(d);
@@ -1221,7 +1240,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   }
   function renderBuilderTotal() {
     var t = dishTotals(fs.draft);
-    $("bTotal").innerHTML = '<span>Ukupno za 1 porciju</span><b>' + fmt(t.kcal) + ' kcal</b><small>P ' + dec(t.p) + ' g · M ' + dec(t.f) + ' g · UH ' + dec(t.c) + ' g</small>';
+    $("bTotal").innerHTML = '<span>Ukupno za 1 porciju</span><b>' + fmt(t.kcal) + ' kcal</b><small>P ' + dec(t.p) + ' g · UH ' + dec(t.c) + ' g · M ' + dec(t.f) + ' g</small>';
   }
 
   // --- ručni unos ---
