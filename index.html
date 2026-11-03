@@ -293,6 +293,20 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .mbox small { display: block; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .mbox b { font-family: var(--display); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
 .mbox small { display: flex !important; align-items: center; gap: 6px; }
+/* grupe jela */
+.k-domace { --kc: #c0662b; } .k-zdravo { --kc: #2f8a4f; } .k-jeftino { --kc: #6b55c2; }
+.ctag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; vertical-align: 2px; white-space: nowrap;
+  color: var(--kc); background: color-mix(in srgb, var(--kc) 14%, transparent); }
+.cat .ctag { margin-left: 0; font-size: 0.78rem; }
+.dcat-h { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 2px; padding-bottom: 6px; border-bottom: 2px solid var(--kc);
+  font-family: var(--display); font-weight: 700; font-size: 1.05rem; color: var(--ink); }
+.dcat-h .cdot { width: 10px; height: 10px; border-radius: 50%; background: var(--kc); align-self: center; flex: none; }
+.dcat-h small { margin-left: auto; font-family: var(--body); font-weight: 500; font-size: 0.78rem; color: var(--muted); text-align: right; }
+.dcat-list .ctag { display: none; }
+.chip.k-domace.on, .chip.k-zdravo.on, .chip.k-jeftino.on { background: var(--kc); border-color: var(--kc); color: #fff; }
+.chip.k-domace, .chip.k-zdravo, .chip.k-jeftino { border-color: color-mix(in srgb, var(--kc) 45%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .k-domace { --kc: #e08a4e; } :root:not([data-theme="light"]) .k-zdravo { --kc: #5cc27e; } :root:not([data-theme="light"]) .k-jeftino { --kc: #9a86e8; } }
+:root[data-theme="dark"] .k-domace { --kc: #e08a4e; } :root[data-theme="dark"] .k-zdravo { --kc: #5cc27e; } :root[data-theme="dark"] .k-jeftino { --kc: #9a86e8; }
 .split { display: flex; flex-direction: column; gap: 6px; margin-top: -4px; }
 .split-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; }
 .split-bar .p { background: var(--c-p); } .split-bar .c { background: var(--c-c); } .split-bar .f { background: var(--c-f); }
@@ -823,9 +837,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           '<button role="tab" data-tab="dishes">Jela</button>' +
         '</div>' +
         '<div class="search">' + ICON_SEARCH + '<input id="foodSearch" type="search" autocomplete="off" value="' + esc(fs.query) + '"></div>' +
-        '<div class="srcs" role="group" aria-label="Izvor">' +
-          '<button class="chip" data-src="all">Sve</button><button class="chip" data-src="std">Standardna lista</button><button class="chip" data-src="com">Od korisnika</button>' +
-        '</div>' +
+        '<div class="srcs" id="srcs" role="group" aria-label="Filter"></div>' +
         '<div id="foodList"></div>';
       var inp = $("foodSearch");
       inp.addEventListener("input", function () { fs.query = inp.value; renderList(); });
@@ -845,9 +857,17 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       ' · P ' + dec(f.p) + ' · UH ' + dec(f.c) + ' · M ' + dec(f.f) + '</small></span>' +
       '<span class="fk">' + fmt(f.kcal) + ' <small>kcal</small></span></button></li>';
   }
+  // grupe standardnih jela
+  var DCATS = [
+    { cat: "Domaće", key: "domace", desc: "klasična srpska jela" },
+    { cat: "Zdravo", key: "zdravo", desc: "balansirani obroci" },
+    { cat: "Jeftino i zdravo", key: "jeftino", desc: "balansirano od jeftinih namirnica" }
+  ];
+  function dcatOf(d) { for (var i = 0; i < DCATS.length; i++) if (DCATS[i].cat === d.cat) return DCATS[i]; return null; }
+  function ctag(d) { var c = d.std && dcatOf(d); return c ? '<span class="ctag k-' + c.key + '">' + esc(c.cat) + '</span>' : ""; }
   function dishRow(d) {
     var t = dishTotals(d);
-    return '<li><button data-dish="' + esc(d.id) + '"><span class="fn"><b>' + esc(d.name) + tag(d) + '</b><small>' + t.n + (t.n === 1 ? " namirnica" : " namirnice") +
+    return '<li><button data-dish="' + esc(d.id) + '"><span class="fn"><b>' + esc(d.name) + tag(d) + ctag(d) + '</b><small>' + t.n + (t.n === 1 ? " namirnica" : " namirnice") +
       ' · P ' + fmt(t.p) + ' · UH ' + fmt(t.c) + ' · M ' + fmt(t.f) + '</small></span>' +
       '<span class="fk">' + fmt(t.kcal) + ' <small>kcal</small></span></button></li>';
   }
@@ -885,16 +905,23 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var q = norm(fs.query.trim()), html = "";
     var b = document.querySelectorAll("[data-tab]");
     for (var i = 0; i < b.length; i++) b[i].setAttribute("aria-selected", b[i].getAttribute("data-tab") === fs.tab);
-    b = document.querySelectorAll("[data-src]");
-    for (i = 0; i < b.length; i++) b[i].classList.toggle("on", b[i].getAttribute("data-src") === fs.src);
     var foods = fs.tab === "foods";
+    var chips = foods
+      ? [["all", "Sve"], ["std", "Standardna lista"], ["com", "Od korisnika"]]
+      : [["all", "Sve"]].concat(DCATS.map(function (c) { return ["d:" + c.key, c.cat]; }), [["com", "Od korisnika"]]);
+    $("srcs").innerHTML = chips.map(function (c) {
+      var k = c[0].indexOf("d:") === 0 ? " k-" + c[0].slice(2) : "";
+      return '<button class="chip' + k + (fs.src === c[0] ? " on" : "") + '" data-src="' + c[0] + '">' + esc(c[1]) + '</button>';
+    }).join("");
     $("foodSearch").placeholder = foods ? "Pretraži, npr. jaje, piletina, hleb" : "Pretraži jela";
-    var showStd = fs.src !== "com", showCom = fs.src !== "std";
+    var onlyCat = fs.src.indexOf("d:") === 0 ? fs.src.slice(2) : null;
+    var showStd = fs.src !== "com", showCom = fs.src === "all" || fs.src === "com";
     var fn = foods ? row : dishRow;
-    var std = foods ? STD_FOODS : STD_DISHES, com = foods ? comFoods() : comDishes();
+    var std = foods ? STD_FOODS : STD_DISHES.filter(function (d) { return !onlyCat || (dcatOf(d) || {}).key === onlyCat; });
+    var com = foods ? comFoods() : comDishes();
     var recentIds = foods ? state.recent : state.recentDishes;
     var lookup = foods ? function (id) { return FOOD_BY_ID[id]; } : dishById;
-    var ok = function (x) { return x && (x.std ? showStd : showCom); };
+    var ok = function (x) { return x && (x.std ? showStd && std.indexOf(x) !== -1 : showCom); };
 
     html += addButton(foods ? "food" : "dish");
     if (q) {
@@ -920,10 +947,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           });
           html += '<p class="src">Standardna lista: približne vrednosti na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
         } else {
-          var dcats = [];
-          STD_DISHES.forEach(function (d) { var c = d.cat || "Standardna lista"; if (dcats.indexOf(c) === -1) dcats.push(c); });
-          dcats.forEach(function (c) {
-            html += '<div class="group-h">' + esc(c) + '</div>' + ul(STD_DISHES.filter(function (d) { return (d.cat || "Standardna lista") === c; }), dishRow);
+          DCATS.forEach(function (c) {
+            var inCat = std.filter(function (d) { return d.cat === c.cat; });
+            if (inCat.length) html += '<div class="dcat-h k-' + c.key + '"><span class="cdot"></span>' + esc(c.cat) + '<small>' + esc(c.desc) + ' · ' + inCat.length + '</small></div>' +
+              '<div class="dcat-list">' + ul(inCat, dishRow) + '</div>';
           });
         }
       }
@@ -934,7 +961,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
   $("foodBody").addEventListener("click", function (e) {
     var t;
-    if ((t = e.target.closest("[data-tab]"))) { fs.tab = t.getAttribute("data-tab"); fs.query = ""; $("foodSearch").value = ""; renderList(); return; }
+    if ((t = e.target.closest("[data-tab]"))) { fs.tab = t.getAttribute("data-tab"); fs.query = ""; fs.src = "all"; $("foodSearch").value = ""; renderList(); return; }
     if ((t = e.target.closest("[data-src]"))) { fs.src = t.getAttribute("data-src"); renderList(); return; }
     if ((t = e.target.closest("[data-food]"))) { fs.food = FOOD_BY_ID[t.getAttribute("data-food")]; fs.qty = fs.food.portion || 100; fs.view = "detail"; renderFoods(); return; }
     if ((t = e.target.closest("[data-dish]"))) { fs.dish = dishById(t.getAttribute("data-dish")); fs.portions = 1; fs.view = "dish"; renderFoods(); return; }
@@ -1121,7 +1148,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }
     $("foodBody").innerHTML =
       '<div class="detail">' +
-        '<div class="cat">' + esc(author(d)) + (d.cat ? " · " + esc(d.cat) : "") + ' · 1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
+        '<div class="cat">' + (d.std && dcatOf(d) ? ctag(d) + " " : esc(author(d)) + " · ") + '1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
         splitBar(tot) +
         '<div class="field"><label for="portIn">Broj porcija</label>' +
           '<div class="qty"><div class="inwrap"><input id="portIn" type="text" inputmode="decimal" autocomplete="off" value="' + dec(fs.portions) + '"><span class="u">porc.</span></div></div></div>' +
