@@ -34,8 +34,8 @@ Velika i mala slova u korisničkom imenu nisu bitna pri prijavi.
 3. Levo **Build → Authentication → Get started**.
    - Kartica **Sign-in method** → **Email/Password** → uključi prvi prekidač (**Enable**) → **Save**.
      (Drugi, „Email link“, ostavi isključen.)
-   - Kartica **Settings → User actions** → **isključi „Enable create (sign-up)“** → **Save**.
-     Tako niko ne može sam sebi da napravi nalog, samo ti.
+   - Kartica **Settings → User actions** → „Enable create (sign-up)“ je ostavljeno **uključeno**,
+     da bi Claude mogao da pravi naloge (vidi „Dodavanje novog korisnika“).
 4. Kartica **Users → Add user**, za svakog korisnika (email i lozinka po pravilu iznad).
 5. Levo **Build → Firestore Database → Create database**.
    - Lokacija: `eur3 (europe-west)`.
@@ -52,9 +52,17 @@ Pri prvoj prijavi posle povezivanja, ono što je korisnik već uneo na tom uređ
 
 ## Dodavanje novog korisnika
 
+Registracija novih naloga (Authentication → Settings → User actions → „Enable create (sign-up)“)
+je namerno **ostavljena uključena**, da bi Claude mogao sam da napravi nalog:
+
 1. Javi Claude-u korisničko ime i ime za prikaz (npr. `Jovana2201` → „Jovana“).
-   Claude doda red u `korisnici.js` i kaže ti email i lozinku za nalog.
-2. Ti u Firebase konzoli: **Authentication → Users → Add user** sa tim emailom i lozinkom.
+2. Claude doda red u `korisnici.js`, napravi nalog `<id>@kalorije.app` sa lozinkom po pravilu iznad
+   i proveri da prijava radi.
+
+Ako se registracija jednom isključi, nalog pravi admin u konzoli: **Authentication → Users → Add user**.
+
+Napomena: dok je registracija uključena, neko ko zna kako mogao bi sebi da napravi nalog i dodaje
+namirnice i jela u zajedničku listu. Tuđe profile i obroke ni tada ne može da vidi (pravila u `firestore.rules`).
 
 ## Kako su podaci organizovani
 
