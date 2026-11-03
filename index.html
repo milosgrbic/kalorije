@@ -98,6 +98,18 @@ main {
 .wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 
 
+.daybar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.daybar button {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--surface); display: grid; place-items: center;
+}
+.daybar button:disabled { opacity: 0.35; cursor: default; }
+.daylabel { text-align: center; }
+.daylabel b { display: block; font-family: var(--display); font-size: 1.1rem; font-weight: 700; }
+.daylabel small { color: var(--muted); font-size: 0.82rem; }
+.daybar .daylabel { width: auto; height: auto; border-radius: 10px; background: none; border: 0; padding: 2px 8px; color: inherit; display: block; }
+.daylabel small b { display: inline; font: inherit; }
+
 /* gauge */
 .gauge-card { background: var(--surface); border-radius: 22px; padding: 18px 16px 16px; border: 1px solid var(--line); }
 .gauge { position: relative; width: 100%; max-width: 340px; margin: 0 auto; }
@@ -395,6 +407,12 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
 <main>
   <div class="wrap">
+    <div class="daybar">
+      <button id="prevDay" aria-label="Prethodni dan"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="daylabel" id="dayLabel" type="button" aria-label="Vrati na danas"><b id="dayName">Danas</b><small id="dayDate"></small></button>
+      <button id="nextDay" aria-label="Sledeći dan"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>
+    </div>
+
     <section class="gauge-card" aria-label="Dnevni unos kalorija">
       <div class="gauge">
         <svg id="gaugeSvg" viewBox="-28 4 356 178"role="img" aria-labelledby="gaugeLabel">
@@ -514,9 +532,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
   function emptyState() { return { profile: null, days: {}, recent: [], recentDishes: [] }; }
   function fill(x) {
-    var t = todayKey(), only = {};
-    only[t] = (x.days || {})[t] || {};   // stariji dani se ne čuvaju
-    x.days = only; x.recent = x.recent || []; x.recentDishes = x.recentDishes || []; x.profile = x.profile || null;
+    x.days = x.days || {}; x.recent = x.recent || []; x.recentDishes = x.recentDishes || []; x.profile = x.profile || null;
     return x;
   }
   function userKey() { return KEY_BASE + "." + KDB.user.id; }
@@ -612,6 +628,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function mealTotal(id) { return (dayData()[id] || []).reduce(function (s, x) { return s + x.kcal; }, 0); }
 
   function render() {
+    var d = parseKey(day), t = todayKey();
+    $("dayName").textContent = day === t ? "Danas" : day === shift(t, -1) ? "Juče" : DAYS[d.getDay()].replace(/^./, function (c) { return c.toUpperCase(); });
+    $("dayDate").textContent = DAYS[d.getDay()] + ", " + d.getDate() + ". " + MONTHS[d.getMonth()] + " " + d.getFullYear() + ".";
+    $("nextDay").disabled = day >= t;
 
     var g = goal();
     var eaten = MEALS.reduce(function (s, m) { return s + mealTotal(m.id); }, 0);
@@ -697,11 +717,17 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var n = $("n-" + id); if (n) n.focus();
   });
 
-  // čuva se samo današnji dan: posle ponoći aplikacija sama pređe na novi, prazan dan
+  $("prevDay").onclick = function () { day = shift(day, -1); openMeals = {}; render(); };
+  $("nextDay").onclick = function () { if (day < todayKey()) { day = shift(day, 1); openMeals = {}; render(); } };
+  $("dayLabel").onclick = function () { if (day !== todayKey()) { day = todayKey(); openMeals = {}; render(); } };
+
+  // posle ponoći: ako je bio otvoren "danas", aplikacija sama pređe na novi dan
+  var lastToday = todayKey();
   function checkNewDay() {
-    if (todayKey() === day) return;
-    day = todayKey(); state.days = {}; state.days[day] = {}; openMeals = {};
-    save(); render();
+    var t = todayKey();
+    if (t === lastToday) return;
+    if (day === lastToday) { day = t; openMeals = {}; render(); }
+    lastToday = t;
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkNewDay(); });
   window.addEventListener("focus", checkNewDay);
@@ -1441,7 +1467,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       });
       y += 6;
     });
-    if (!any) { font("normal", 11, MUTED); doc.text("Danas još ništa nije uneto.", L, y); y += 8; }
+    if (!any) { font("normal", 11, MUTED); doc.text(day === todayKey() ? "Danas još ništa nije uneto." : "Za ovaj dan ništa nije uneto.", L, y); y += 8; }
 
     // podnožje
     var pages = doc.getNumberOfPages();
