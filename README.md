@@ -10,6 +10,8 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Profil** (ikonica gore desno): pol, visina, težina, datum rođenja, aktivnost → BMI, bazalni metabolizam i dnevna potrošnja (Mifflin-St Jeor × faktor aktivnosti).
 - **Brzinomer**: unete kalorije u odnosu na dnevnu potrošnju, plus proteini, masti i UH.
 - **Obroci**: doručak, ručak, večera, užine, ostalo. Dodavanje iz liste (g ili ml) ili ručno.
+  Čuva se samo današnji dan; posle ponoći aplikacija kreće od praznog dana.
+- **Izvezi**: dugme na dnu pravi PDF današnjeg unosa i otvara meni za deljenje (Viber, WhatsApp, mejl…).
 - **Namirnice i jela**: pretraga, makroi, nedavno izabrano. Jelo je skup namirnica i sabira se po porcijama. Na vrhu je „Dobra opcija“: zdrava, jednostavna i izbalansirana jela za kuću.
 - **Dve vrste liste**: standardna (`foods.js`, `jela.js`, niko je ne briše) i od korisnika (zajednička baza, autor briše svoje).
 
@@ -22,6 +24,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 | `korisnici.js` | spisak korisnika (otisci korisničkih imena, ne sama imena) |
 | `db.js` | prijava i čuvanje podataka: lokalno ili Firebase |
 | `firebase-config.js` | podešavanja baze (prazno = lokalni režim) |
+| `lib/` | jsPDF i font za PDF izvoz (DejaVu Sans, sa č ć đ š ž) |
 | `firestore.rules` | pravila ko sme šta u bazi |
 | `FIREBASE.md` | uputstvo za povezivanje baze |
 
