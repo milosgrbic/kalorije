@@ -345,7 +345,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .btotal span { color: var(--muted); font-size: 0.85rem; }
 .btotal b { font-family: var(--display); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 .btotal small { grid-column: 1 / -1; color: var(--muted); font-variant-numeric: tabular-nums; }
-.srcs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+#foodList > .newdish:first-child { margin-top: 6px; }
 .chip.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
 .tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; vertical-align: 2px;
   background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -625,7 +625,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("sLeftBox").classList.toggle("over", left < 0);
     $("hint").hidden = !!state.profile;
     $("profileDot").hidden = !!state.profile;
-    $("greet").textContent = KDB.user ? "Zdravo, " + KDB.user.name + (state.profile ? " · cilj " + fmt(g) + " kcal" : "") : "Dnevni unos hrane";
+    $("greet").textContent = KDB.user ? "Zdravo, " + KDB.user.name : "Dnevni unos hrane";
     drawGauge(eaten, g);
     var mac = { p: 0, f: 0, c: 0 };
     MEALS.forEach(function (m) { (dayData()[m.id] || []).forEach(function (it) { mac.p += it.p || 0; mac.f += it.f || 0; mac.c += it.c || 0; }); });
@@ -840,7 +840,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           '<button role="tab" data-tab="dishes">Jela</button>' +
         '</div>' +
         '<div class="search">' + ICON_SEARCH + '<input id="foodSearch" type="search" autocomplete="off" value="' + esc(fs.query) + '"></div>' +
-        '<div class="srcs" id="srcs" role="group" aria-label="Filter"></div>' +
         '<div id="foodList"></div>';
       var inp = $("foodSearch");
       inp.addEventListener("input", function () { fs.query = inp.value; renderList(); });
@@ -908,16 +907,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var b = document.querySelectorAll("[data-tab]");
     for (var i = 0; i < b.length; i++) b[i].setAttribute("aria-selected", b[i].getAttribute("data-tab") === fs.tab);
     var foods = fs.tab === "foods";
-    var chips = foods
-      ? [["all", "Sve"], ["std", "Standardna lista"], ["com", "Od korisnika"]]
-      : [["all", "Sve"]].concat(DCATS.map(function (c) { return ["d:" + c.key, c.cat]; }), [["com", "Od korisnika"]]);
-    $("srcs").innerHTML = chips.map(function (c) {
-      var k = c[0].indexOf("d:") === 0 ? " k-" + c[0].slice(2) : "";
-      return '<button class="chip' + k + (fs.src === c[0] ? " on" : "") + '" data-src="' + c[0] + '">' + esc(c[1]) + '</button>';
-    }).join("");
     $("foodSearch").placeholder = foods ? "Pretraži, npr. jaje, piletina, hleb" : "Pretraži jela";
-    var onlyCat = fs.src.indexOf("d:") === 0 ? fs.src.slice(2) : null;
-    var showStd = fs.src !== "com", showCom = fs.src === "all" || fs.src === "com";
+    var onlyCat = null, showStd = true, showCom = true;
     var fn = foods ? row : dishRow;
     var std = foods ? STD_FOODS : STD_DISHES.filter(function (d) { return !onlyCat || (dcatOf(d) || {}).key === onlyCat; });
     var com = foods ? comFoods() : comDishes();
@@ -963,8 +954,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
   $("foodBody").addEventListener("click", function (e) {
     var t;
-    if ((t = e.target.closest("[data-tab]"))) { fs.tab = t.getAttribute("data-tab"); fs.query = ""; fs.src = "all"; $("foodSearch").value = ""; renderList(); return; }
-    if ((t = e.target.closest("[data-src]"))) { fs.src = t.getAttribute("data-src"); renderList(); return; }
+    if ((t = e.target.closest("[data-tab]"))) { fs.tab = t.getAttribute("data-tab"); fs.query = ""; $("foodSearch").value = ""; renderList(); return; }
     if ((t = e.target.closest("[data-food]"))) { fs.food = FOOD_BY_ID[t.getAttribute("data-food")]; fs.qty = fs.food.portion || 100; fs.view = "detail"; renderFoods(); return; }
     if ((t = e.target.closest("[data-dish]"))) { fs.dish = dishById(t.getAttribute("data-dish")); fs.portions = 1; fs.view = "dish"; renderFoods(); return; }
     if (e.target.closest("[data-newdish]")) { fs.draft = { id: null, name: "", items: [], back: false }; fs.view = "builder"; renderFoods(); return; }
