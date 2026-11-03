@@ -10,7 +10,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Profil** (ikonica gore desno): pol, visina, težina, datum rođenja, aktivnost → BMI, bazalni metabolizam i dnevna potrošnja (Mifflin-St Jeor × faktor aktivnosti).
 - **Brzinomer**: unete kalorije u odnosu na dnevnu potrošnju, plus proteini, masti i UH.
 - **Obroci**: doručak, ručak, večera, užine, ostalo. Dodavanje iz liste (g ili ml) ili ručno.
-- **Namirnice i jela**: pretraga, makroi, nedavno izabrano. Jelo je skup namirnica i sabira se po porcijama. Standardna jela su u grupama Domaće, Zdravo i Jeftino i zdravo.
+- **Namirnice i jela**: pretraga, makroi, nedavno izabrano. Jelo je skup namirnica i sabira se po porcijama. Na vrhu je „Dobra opcija“: zdrava, jednostavna i izbalansirana jela za kuću.
 - **Dve vrste liste**: standardna (`foods.js`, `jela.js`, niko je ne briše) i od korisnika (zajednička baza, autor briše svoje).
 
 ## Fajlovi

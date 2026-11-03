@@ -144,6 +144,8 @@ window.FOODS = [
   { id: "proja", name: "Proja", cat: "Hleb i žitarice", unit: "g", kcal: 250, p: 6, f: 9, c: 36, portion: 100 },
   { id: "kroasan", name: "Kroasan (običan)", cat: "Hleb i žitarice", unit: "g", kcal: 406, p: 8.2, f: 21, c: 45.8, portion: 60 },
   { id: "palacinke", name: "Palačinke (bez fila)", cat: "Hleb i žitarice", unit: "g", kcal: 227, p: 6.4, f: 9.7, c: 28.3, portion: 60, note: "1 palačinka ≈ 60 g" },
+  { id: "kinoa", name: "Kinoa (suva)", cat: "Hleb i žitarice", unit: "g", kcal: 368, p: 14.1, f: 6.1, c: 64.2, portion: 60 },
+  { id: "kuskus", name: "Kus-kus (suv)", cat: "Hleb i žitarice", unit: "g", kcal: 376, p: 12.8, f: 0.6, c: 77.4, portion: 60 },
 
   // Povrće
   { id: "krompir", name: "Krompir (sirov)", cat: "Povrće", unit: "g", kcal: 77, p: 2, f: 0.1, c: 17, portion: 200 },
@@ -192,6 +194,7 @@ window.FOODS = [
   { id: "pasuljsuv", name: "Pasulj beli (suv)", cat: "Povrće", unit: "g", kcal: 333, p: 23.4, f: 0.9, c: 60.3, portion: 80 },
   { id: "crvenipasulj", name: "Crveni pasulj (konzerva, oceđen)", cat: "Povrće", unit: "g", kcal: 110, p: 7, f: 0.5, c: 19, portion: 120 },
   { id: "blitva", name: "Blitva", cat: "Povrće", unit: "g", kcal: 19, p: 1.8, f: 0.2, c: 3.7, portion: 200 },
+  { id: "batat", name: "Batat (slatki krompir)", cat: "Povrće", unit: "g", kcal: 86, p: 1.6, f: 0.1, c: 20, portion: 200 },
 
   // Voće
   { id: "jabuka", name: "Jabuka", cat: "Voće", unit: "g", kcal: 52, p: 0.3, f: 0.2, c: 14, portion: 180, note: "1 srednja ≈ 180 g" },
@@ -223,6 +226,7 @@ window.FOODS = [
   { id: "suvekajsije", name: "Suve kajsije", cat: "Voće", unit: "g", kcal: 241, p: 3.4, f: 0.5, c: 62.6, portion: 30 },
   { id: "suvogrozdje", name: "Suvo grožđe", cat: "Voće", unit: "g", kcal: 299, p: 3.1, f: 0.5, c: 79.2, portion: 30 },
   { id: "urme", name: "Urme", cat: "Voće", unit: "g", kcal: 282, p: 2.5, f: 0.4, c: 75, portion: 30 },
+  { id: "avokado", name: "Avokado", cat: "Voće", unit: "g", kcal: 160, p: 2, f: 15, c: 8.5, portion: 100 },
 
   // Orašasti plodovi i semenke
   { id: "orah", name: "Orah", cat: "Orašasto i semenke", unit: "g", kcal: 654, p: 15, f: 65, c: 14, portion: 30 },
@@ -237,6 +241,8 @@ window.FOODS = [
   { id: "bundevine", name: "Semenke bundeve", cat: "Orašasto i semenke", unit: "g", kcal: 559, p: 30.2, f: 49, c: 10.7, portion: 30 },
   { id: "susam", name: "Susam", cat: "Orašasto i semenke", unit: "g", kcal: 573, p: 17.7, f: 49.7, c: 23.4, portion: 10 },
   { id: "kokos", name: "Kokos rendani", cat: "Orašasto i semenke", unit: "g", kcal: 660, p: 6.9, f: 64.5, c: 23.7, portion: 15 },
+  { id: "chia", name: "Čia semenke", cat: "Orašasto i semenke", unit: "g", kcal: 486, p: 17, f: 31, c: 42, portion: 15 },
+  { id: "bademputer", name: "Puter od badema", cat: "Orašasto i semenke", unit: "g", kcal: 614, p: 21, f: 56, c: 19, portion: 15 },
 
   // Masti, ulja, namazi
   { id: "suncokretulje", name: "Suncokretovo ulje", cat: "Ulja i namazi", unit: "ml", kcal: 828, p: 0, f: 92, c: 0, portion: 10, note: "1 kašika ≈ 10 ml" },
@@ -251,6 +257,7 @@ window.FOODS = [
   { id: "senf", name: "Senf", cat: "Ulja i namazi", unit: "g", kcal: 60, p: 3.7, f: 3.3, c: 5.8, portion: 10 },
   { id: "sojinsos", name: "Sojin sos", cat: "Ulja i namazi", unit: "ml", kcal: 53, p: 8.1, f: 0.6, c: 4.9, portion: 10 },
   { id: "ajvardomaci", name: "Ajvar domaći", cat: "Ulja i namazi", unit: "g", kcal: 155, p: 2, f: 10.3, c: 12.4, portion: 40 },
+  { id: "kokosovoulje", name: "Kokosovo ulje", cat: "Ulja i namazi", unit: "g", kcal: 862, p: 0, f: 100, c: 0, portion: 10 },
 
   // Slatkiši i grickalice
   { id: "mlecnacokolada", name: "Mlečna čokolada", cat: "Slatkiši i grickalice", unit: "g", kcal: 535, p: 7.6, f: 30, c: 59, portion: 25 },
@@ -286,6 +293,7 @@ window.FOODS = [
   { id: "energetsko", name: "Energetsko piće", cat: "Pića", unit: "ml", kcal: 45, p: 0, f: 0, c: 11, portion: 250 },
   { id: "bezalkoholnopivo", name: "Bezalkoholno pivo", cat: "Pića", unit: "ml", kcal: 25, p: 0.3, f: 0, c: 5.5, portion: 500 },
   { id: "zestina", name: "Viski / vodka (40%)", cat: "Pića", unit: "ml", kcal: 231, p: 0, f: 0, c: 0, portion: 40 },
+  { id: "bademovomleko", name: "Bademovo mleko (nezaslađeno)", cat: "Pića", unit: "ml", kcal: 15, p: 0.5, f: 1.1, c: 0.3, portion: 250 },
 
   // Gotova i domaća jela (prosečne vrednosti, zavise od recepta)
   { id: "sarma", name: "Sarma", cat: "Gotova jela", unit: "g", kcal: 170, p: 8, f: 11, c: 10, portion: 250, note: "2 sarme ≈ 250 g" },

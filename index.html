@@ -294,7 +294,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .mbox b { font-family: var(--display); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
 .mbox small { display: flex !important; align-items: center; gap: 6px; }
 /* grupe jela */
-.k-domace { --kc: #c0662b; } .k-zdravo { --kc: #2f8a4f; } .k-jeftino { --kc: #6b55c2; }
+.k-dobra { --kc: #2f8a4f; }
+.panel.good { --tint: var(--kc); }
+.panel.good .ctag { display: none; }
+.good-note { margin: 4px 2px 0; }
 .ctag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; vertical-align: 2px; white-space: nowrap;
   color: var(--kc); background: color-mix(in srgb, var(--kc) 14%, transparent); }
 .cat .ctag { margin-left: 0; font-size: 0.78rem; }
@@ -303,10 +306,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .dcat-h .cdot { width: 10px; height: 10px; border-radius: 50%; background: var(--kc); align-self: center; flex: none; }
 .dcat-h small { margin-left: auto; font-family: var(--body); font-weight: 500; font-size: 0.78rem; color: var(--muted); text-align: right; }
 .dcat-list .ctag { display: none; }
-.chip.k-domace.on, .chip.k-zdravo.on, .chip.k-jeftino.on { background: var(--kc); border-color: var(--kc); color: #fff; }
-.chip.k-domace, .chip.k-zdravo, .chip.k-jeftino { border-color: color-mix(in srgb, var(--kc) 45%, transparent); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .k-domace { --kc: #e08a4e; } :root:not([data-theme="light"]) .k-zdravo { --kc: #5cc27e; } :root:not([data-theme="light"]) .k-jeftino { --kc: #9a86e8; } }
-:root[data-theme="dark"] .k-domace { --kc: #e08a4e; } :root[data-theme="dark"] .k-zdravo { --kc: #5cc27e; } :root[data-theme="dark"] .k-jeftino { --kc: #9a86e8; }
+.chip.k-dobra.on { background: var(--kc); border-color: var(--kc); color: #fff; }
+.chip.k-dobra { border-color: color-mix(in srgb, var(--kc) 45%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .k-dobra { --kc: #5cc27e; } }
+:root[data-theme="dark"] .k-dobra { --kc: #5cc27e; }
 .split { display: flex; flex-direction: column; gap: 6px; margin-top: -4px; }
 .split-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 2px; }
 .split-bar .p { background: var(--c-p); } .split-bar .c { background: var(--c-c); } .split-bar .f { background: var(--c-f); }
@@ -859,9 +862,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   }
   // grupe standardnih jela
   var DCATS = [
-    { cat: "Domaće", key: "domace", desc: "klasična srpska jela" },
-    { cat: "Zdravo", key: "zdravo", desc: "balansirani obroci" },
-    { cat: "Jeftino i zdravo", key: "jeftino", desc: "balansirano od jeftinih namirnica" }
+    { cat: "Dobra opcija", key: "dobra", desc: "zdravo, jednostavno i izbalansirano" }
   ];
   function dcatOf(d) { for (var i = 0; i < DCATS.length; i++) if (DCATS[i].cat === d.cat) return DCATS[i]; return null; }
   function ctag(d) { var c = d.std && dcatOf(d); return c ? '<span class="ctag k-' + c.key + '">' + esc(c.cat) + '</span>' : ""; }
@@ -884,6 +885,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   }
 
   var ICON_CLOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  var ICON_LEAF = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15"/><path d="M5 19c3-4 6-6 9-7"/></svg>';
   var ICON_USER = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
   function panel(cls, icon, title, list, fn) {
     return '<section class="panel ' + cls + '"><div class="panel-h"><span class="pi">' + icon + '</span>' + title +
@@ -935,6 +937,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       var others = showCom ? com.filter(function (x) { return !isMine(x); }) : [];
       if (recent.length) html += panel("recent", ICON_CLOCK, "Nedavno dodato", recent, fn);
       if (mine.length) html += panel("mine", ICON_USER, foods ? "Moje namirnice" : "Moja jela", mine, fn);
+      var good = !foods && showStd ? std.filter(function (d) { return d.cat === "Dobra opcija"; }) : [];
+      if (good.length) html += panel("good k-dobra", ICON_LEAF, "Dobra opcija", good, dishRow) +
+        '<p class="src good-note">Zdrava i izbalansirana jela koja se lako naprave kod kuće.</p>';
       if (showCom && (others.length || !mine.length)) {
         html += '<div class="group-h">Od drugih korisnika</div>' +
           (others.length ? ul(others, fn) : '<p class="noresult">Još niko nije dodao ' + (foods ? "namirnicu" : "jelo") + '.</p>');
@@ -947,11 +952,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           });
           html += '<p class="src">Standardna lista: približne vrednosti na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
         } else {
-          DCATS.forEach(function (c) {
-            var inCat = std.filter(function (d) { return d.cat === c.cat; });
-            if (inCat.length) html += '<div class="dcat-h k-' + c.key + '"><span class="cdot"></span>' + esc(c.cat) + '<small>' + esc(c.desc) + ' · ' + inCat.length + '</small></div>' +
-              '<div class="dcat-list">' + ul(inCat, dishRow) + '</div>';
-          });
+          var rest = std.filter(function (d) { return !d.cat; });
+          if (rest.length) html += '<div class="group-h">Sva jela</div>' + ul(rest, dishRow);
         }
       }
       if (!foods) html += '<p class="src">Kalorije su za 1 porciju. Jelo je zbir namirnica, pa se računa samo.</p>';
