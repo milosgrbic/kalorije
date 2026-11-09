@@ -10,7 +10,9 @@
  *    izvedenom iz username-a (pravi ga Claude ili admin, vidi FIREBASE.md).
  *      * zajednička baza namirnica i jela (kolekcije "namirnice" i "jela"): svi vide, svako dodaje,
  *        menja i briše samo ono što je sam napravio (pravila su u firestore.rules),
- *      * lični podaci (profil + obroci po danima) u users/{uid}, vidi ih samo vlasnik.
+ *      * lični podaci u users/{uid}: profil, niz dana, težina; obroci po danima u users/{uid}/dani
+ *        (čuva se poslednjih 15 dana) — vidi ih samo vlasnik,
+ *      * ekipa/{uid}: mali javni sažetak za ekran Ekipa (ime, % današnjeg cilja, niz dana).
  *
  * Standardna lista (foods.js, jela.js) nije u bazi i niko je ne može obrisati iz aplikacije.
  */
@@ -106,7 +108,20 @@
     };
     KDB.logout = function () { KDB.user = null; setSession(null); emit("auth"); return Promise.resolve(); };
     KDB.loadPersonal = function () { return Promise.resolve(null); };
-    KDB.savePersonal = function () {};
+    KDB.deleteDays = function () {};
+    var TEAM_KEY = "kalorije.ekipa", teamCbs = [];
+    var readTeam = function () { try { return JSON.parse(localStorage.getItem(TEAM_KEY)) || {}; } catch (e) { return {}; } };
+    KDB.savePersonal = function (state, dayKeys, team) {
+      if (!team || !KDB.user) return;
+      var t = readTeam(); t[KDB.user.uid] = team;
+      try { localStorage.setItem(TEAM_KEY, JSON.stringify(t)); } catch (e) {}
+      teamCbs.forEach(function (cb) { cb(teamList(t)); });
+    };
+    var teamList = function (t) { return Object.keys(t).map(function (k) { return Object.assign({ uid: k }, t[k]); }); };
+    KDB.watchTeam = function (cb) {
+      teamCbs.push(cb); cb(teamList(readTeam()));
+      return function () { teamCbs = teamCbs.filter(function (x) { return x !== cb; }); };
+    };
     var ss = getSession(), e0 = ss && byId(ss.id);
     if (e0) KDB.user = { uid: e0.id, id: e0.id, name: e0.name };
     KDB.ready = true;
@@ -186,7 +201,7 @@
   KDB.deleteFood = function (id) { return wrap(db.collection("namirnice").doc(id).delete()); };
   KDB.deleteDish = function (id) { return wrap(db.collection("jela").doc(id).delete()); };
 
-  // Lični podaci: users/{uid} = profil i "nedavno", users/{uid}/dani/{YYYY-MM-DD} = obroci tog dana
+  // Lični podaci: users/{uid} = profil, nedavno, niz dana, težina; users/{uid}/dani/{YYYY-MM-DD} = obroci tog dana
   KDB.loadPersonal = function () {
     if (!KDB.user) return Promise.resolve(null);
     var ref = db.collection("users").doc(KDB.user.uid);
@@ -194,27 +209,53 @@
       if (!r[0].exists) return null;
       var m = r[0].data(), days = {};
       r[1].forEach(function (d) { days[d.id] = d.data().meals || {}; });
-      return { profile: m.profile || null, recent: m.recent || [], recentDishes: m.recentDishes || [], days: days };
+      return { profile: m.profile || null, recent: m.recent || [], recentDishes: m.recentDishes || [],
+        streak: m.streak || null, best: m.best || 0, weights: m.weights || null, days: days };
     });
   };
-  var pending = {}, timer = null;
-  KDB.savePersonal = function (state, dayKeys) {
+  // stari dani (van 15 dana) se brišu iz baze
+  KDB.deleteDays = function (keys) {
+    if (!KDB.user || !keys.length) return;
+    var ref = db.collection("users").doc(KDB.user.uid).collection("dani"), batch = db.batch();
+    keys.forEach(function (k) { batch.delete(ref.doc(k)); });
+    batch.commit().catch(function () {});
+  };
+  var pending = {}, pendingTeam = null, timer = null;
+  KDB.savePersonal = function (state, dayKeys, team) {
     if (!KDB.user) return;
-    pending.meta = { profile: state.profile || null, recent: state.recent || [], recentDishes: state.recentDishes || [] };
+    pending.meta = { profile: state.profile || null, recent: state.recent || [], recentDishes: state.recentDishes || [],
+      streak: state.streak || null, best: state.best || 0, weights: state.weights || null };
     (dayKeys || []).forEach(function (k) { pending[k] = state.days[k] || {}; });
+    if (team) pendingTeam = team;
     clearTimeout(timer);
     timer = setTimeout(flush, 600);
   };
   function flush() {
-    if (!KDB.user || !Object.keys(pending).length) return;
-    var ref = db.collection("users").doc(KDB.user.uid), batch = db.batch(), p = pending;
-    pending = {};
-    Object.keys(p).forEach(function (k) {
-      if (k === "meta") batch.set(ref, Object.assign({ name: KDB.user.name, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, p.meta));
-      else batch.set(ref.collection("dani").doc(k), { meals: p[k] });
-    });
-    batch.commit().catch(function (e) { KDB.error = poruka(e); emit("auth"); });
+    if (!KDB.user) return;
+    var ref = db.collection("users").doc(KDB.user.uid), p = pending, team = pendingTeam;
+    pending = {}; pendingTeam = null;
+    if (Object.keys(p).length) {
+      var batch = db.batch();
+      Object.keys(p).forEach(function (k) {
+        if (k === "meta") batch.set(ref, Object.assign({ name: KDB.user.name, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, p.meta));
+        else batch.set(ref.collection("dani").doc(k), { meals: p[k] });
+      });
+      batch.commit().catch(function (e) { KDB.error = poruka(e); emit("auth"); });
+    }
+    // ekipa ide posebno, da njena greška ne bi sprečila čuvanje obroka
+    if (team) db.collection("ekipa").doc(KDB.user.uid).set(Object.assign({}, team, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }))
+      .then(function () { KDB.teamError = ""; }, function (e) { KDB.teamError = poruka(e); emit("team"); });
   }
+  KDB.teamError = "";
+  KDB.watchTeam = function (cb) {
+    if (!KDB.user) { cb([]); return function () {}; }
+    return db.collection("ekipa").onSnapshot(function (snap) {
+      cb(snap.docs.map(function (d) {
+        var x = d.data();
+        return { uid: d.id, name: str(x.name, 40) || "Korisnik", day: str(x.day, 10), pct: nr(x.pct), streak: nr(x.streak), last: str(x.last, 10), best: nr(x.best) };
+      }));
+    }, function (e) { KDB.teamError = poruka(e); cb(null); });
+  };
   window.addEventListener("pagehide", flush);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") flush(); });
 })();

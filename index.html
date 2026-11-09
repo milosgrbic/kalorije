@@ -230,7 +230,44 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.9rem;
 }
 .iconbtn svg { width: 20px; height: 20px; }
-@media (max-width: 360px) { .iconbtn span { display: none; } .iconbtn { width: 44px; padding: 0; justify-content: center; } }
+@media (max-width: 430px) { .icon-narrow span { display: none; } .icon-narrow { width: 44px; padding: 0; justify-content: center; } }
+@media (max-width: 340px) { .iconbtn span { display: none; } .iconbtn { width: 44px; padding: 0; justify-content: center; } }
+.brand-sub { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
+.streak { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; opacity: 1; color: var(--brand-ink); font-variant-numeric: tabular-nums; }
+.flame { width: 16px; height: 16px; flex: none; }
+
+/* ekipa */
+.team-sum { margin: 0 0 12px; color: var(--muted); font-size: 0.9rem; }
+.team { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.tm { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: var(--bg); }
+.tm.me { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ok) 55%, transparent); }
+.tm-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.tm-main b { font-weight: 700; }
+.tm-main b small { color: var(--muted); font-weight: 500; }
+.tm-main > small { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.tbar { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.tbar i { display: block; height: 100%; border-radius: 4px; background: var(--ok); }
+.tbar i.near { background: var(--warn); } .tbar i.over { background: var(--over); }
+.tm-streak { display: flex; flex-direction: column; align-items: center; min-width: 44px; font-family: var(--display); font-weight: 800; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.tm-streak .flame { width: 22px; height: 22px; }
+.tm-streak.off { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
+.tm-streak small { font-family: var(--body); font-weight: 500; font-size: 0.68rem; color: var(--muted); }
+
+/* težina */
+.w-intro { margin: 0; color: var(--muted); }
+.wsec { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.wsec h3 { margin: 0; font-family: var(--display); font-size: 1.15rem; }
+.wstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.wstats div { background: var(--bg); border-radius: 12px; padding: 10px; }
+.wstats small { display: block; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.wstats b { font-family: var(--display); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.wchart { width: 100%; height: auto; display: block; }
+.wchart .grid { stroke: var(--line); stroke-width: 1; }
+.wchart .ln { fill: none; stroke: var(--ok); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.wchart .area { fill: color-mix(in srgb, var(--ok) 14%, transparent); }
+.wchart .pt { fill: var(--surface); stroke: var(--ok); stroke-width: 2; }
+.wchart .pt.last { fill: var(--ok); }
+.wchart text { fill: var(--muted); font-family: var(--body); font-size: 10px; font-variant-numeric: tabular-nums; }
 
 /* daily macros */
 .macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
@@ -372,9 +409,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   <div class="banner-inner">
     <div class="brand">
       <div class="brand-name">kalorije<span>.</span></div>
-      <div class="brand-sub" id="greet">Dnevni unos hrane</div>
+      <div class="brand-sub"><span id="greet">Dnevni unos hrane</span><span class="streak" id="streakBadge" hidden title="Niz dana sa unetim obrocima"><svg class="flame" viewBox="0 0 24 24" aria-hidden="true"><path fill="#f07a1a" d="M12.6 2.2c.5 3 3.5 4.7 4.8 7.6 1.7 3.9-.6 9-5 9-4.2 0-6.7-3.3-5.6-6.9.4-1.5 1.4-2.6 2.4-3.3-.1 1.7.7 2.9 1.8 3.3-.7-3.7.4-6.8 1.6-9.7z"/><path fill="#ffc53d" d="M12.3 11.6c.3 1.5 1.8 2.3 2.3 3.8.6 1.9-.6 3.8-2.6 3.8s-3.1-1.6-2.6-3.2c.2-.7.7-1.2 1.2-1.5 0 .8.4 1.3.9 1.5-.2-1.6.3-3.1.8-4.4z"/></svg><b id="streakNum">0</b></span></div>
     </div>
-    <button class="iconbtn" id="openFoods" aria-label="Namirnice i jela">
+    <button class="iconbtn" id="openTeam" aria-label="Ekipa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16 14.2c3.1-.2 5.5 1.9 5.5 5"/></svg>
+      <span>Ekipa</span>
+    </button>
+    <button class="iconbtn icon-narrow" id="openFoods" aria-label="Namirnice i jela">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
       <span>Namirnice</span>
     </button>
@@ -476,6 +517,34 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       <button class="btn" type="submit">Izračunaj i sačuvaj</button>
     </form>
     <div id="results"></div>
+    <div id="weightSection"></div>
+  </div>
+</div>
+
+<div class="overlay" id="teamOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="teamTitle">
+    <div class="sheet-head">
+      <h2 id="teamTitle">Ekipa</h2>
+      <button class="x" id="teamClose" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div id="teamBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="weightOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="weightTitle">
+    <div class="sheet-head">
+      <h2 id="weightTitle">Merenje</h2>
+      <button class="x" id="weightClose" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <form id="weightForm" novalidate>
+      <p class="w-intro" id="weightIntro"></p>
+      <div class="field"><label for="wIn">Težina danas (kg)</label>
+        <div class="qty"><div class="inwrap"><input id="wIn" type="text" inputmode="decimal" autocomplete="off"><span class="u">kg</span></div></div></div>
+      <p class="err" id="wErr"></p>
+      <button class="btn" type="submit">Sačuvaj merenje</button>
+      <button class="btn ghost" type="button" id="wLater">Podseti me sutra</button>
+    </form>
   </div>
 </div>
 
@@ -490,14 +559,15 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
-<script src="firebase-config.js"></script>
-<script src="korisnici.js"></script>
-<script src="db.js"></script>
-<script src="foods.js"></script>
-<script src="jela.js"></script>
+<script src="firebase-config.js?v=2026.11.09-3"></script>
+<script src="korisnici.js?v=2026.11.09-3"></script>
+<script src="db.js?v=2026.11.09-3"></script>
+<script src="foods.js?v=2026.11.09-3"></script>
+<script src="jela.js?v=2026.11.09-3"></script>
 <script>
 (function () {
   "use strict";
+  var APP_VERSION = "2026.11.09-3";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -510,9 +580,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   var day = todayKey();
   var openMeals = {};
 
-  function emptyState() { return { profile: null, days: {}, recent: [], recentDishes: [] }; }
+  function emptyState() { return { profile: null, days: {}, recent: [], recentDishes: [], streak: null, best: 0, weights: null }; }
   function fill(x) {
     x.days = x.days || {}; x.recent = x.recent || []; x.recentDishes = x.recentDishes || []; x.profile = x.profile || null;
+    x.streak = x.streak || null; x.best = x.best || 0; x.weights = x.weights || null;
     return x;
   }
   function userKey() { return KEY_BASE + "." + KDB.user.id; }
@@ -526,7 +597,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function save() {
     if (!KDB.user) return;
     try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
-    if (personalReady) KDB.savePersonal(state, [day]);
+    if (personalReady) KDB.savePersonal(state, [day], teamDoc());
     else { dirtyDays[day] = true; metaDirty = true; }
   }
   function $(id) { return document.getElementById(id); }
@@ -614,6 +685,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("dayName").textContent = day === t ? "Danas" : day === shift(t, -1) ? "Juče" : DAYS[d.getDay()].replace(/^./, function (c) { return c.toUpperCase(); });
     $("dayDate").textContent = DAYS[d.getDay()] + ", " + d.getDate() + ". " + MONTHS[d.getMonth()] + " " + d.getFullYear() + ".";
     $("nextDay").disabled = day >= t;
+    $("prevDay").disabled = day <= windowStart();
+    var sk = updateStreak();
+    $("streakBadge").hidden = !KDB.user || sk.count < 1;
+    $("streakNum").textContent = sk.count;
 
     var g = goal();
     var eaten = MEALS.reduce(function (s, m) { return s + mealTotal(m.id); }, 0);
@@ -699,7 +774,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var n = $("n-" + id); if (n) n.focus();
   });
 
-  $("prevDay").onclick = function () { day = shift(day, -1); openMeals = {}; render(); };
+  $("prevDay").onclick = function () { if (day > windowStart()) { day = shift(day, -1); openMeals = {}; render(); } };
   $("nextDay").onclick = function () { if (day < todayKey()) { day = shift(day, 1); openMeals = {}; render(); } };
   $("dayLabel").onclick = function () { if (day !== todayKey()) { day = todayKey(); openMeals = {}; render(); } };
 
@@ -708,8 +783,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function checkNewDay() {
     var t = todayKey();
     if (t === lastToday) return;
-    if (day === lastToday) { day = t; openMeals = {}; render(); }
+    if (day === lastToday || day < windowStart()) { day = t; openMeals = {}; }
     lastToday = t;
+    if (KDB.user && personalReady) { KDB.deleteDays(pruneDays()); render(); maybeAskWeight(); }
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkNewDay(); });
   window.addEventListener("focus", checkNewDay);
@@ -728,6 +804,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       $("profileForm").reset();
     }
     $("err").textContent = "";
+    renderWeightSection();
     $("overlay").hidden = false;
     document.body.style.overflow = "hidden";
   }
@@ -750,7 +827,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("err").textContent = err;
     if (err) return;
     state.profile = { sex: sex, height: h, weight: w, dob: dob, activity: parseFloat($("activity").value) };
-    save(); showResults(state.profile); render();
+    seedWeight();
+    save(); showResults(state.profile); renderWeightSection(); render();
   });
 
   function showResults(p) {
@@ -1088,7 +1166,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }
     $("foodBody").innerHTML =
       '<form class="detail" id="ffForm" novalidate>' +
-        '<div class="field"><label for="ffName">Naziv</label><input id="ffName" autocomplete="off" placeholder="npr. Jogurt Moja Kravica 1,5%" value="' + esc(d.name || "") + '"><div class="dup" id="ffDup"></div></div>' +
+        '<div class="field"><label for="ffName">Naziv</label><input id="ffName" autocomplete="off" maxlength="120" placeholder="npr. Jogurt Moja Kravica 1,5%" value="' + esc(d.name || "") + '"><div class="dup" id="ffDup"></div></div>' +
         '<div class="row2">' +
           '<div class="field"><label for="ffCat">Kategorija</label><select id="ffCat">' + CATS.map(function (c) { return '<option' + (c === d.cat ? " selected" : "") + '>' + esc(c) + '</option>'; }).join("") + '</select></div>' +
           '<div class="field"><label for="ffUnit">Meri se u</label><select id="ffUnit"><option value="g"' + (d.unit === "g" ? " selected" : "") + '>gramima (g)</option><option value="ml"' + (d.unit === "ml" ? " selected" : "") + '>mililitrima (ml)</option></select></div>' +
@@ -1116,7 +1194,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       e.preventDefault();
       var v = function (id) { var x = parseFloat(String($(id).value).replace(",", ".")); return isNaN(x) ? null : x; };
       var name = $("ffName").value.trim(), kcal = v("ffKcal");
-      var err = !name ? "Upiši naziv." : kcal == null || kcal < 0 ? "Upiši energiju (kcal na 100 " + $("ffUnit").value + ")." : "";
+      var u = $("ffUnit").value, mac = [v("ffP") || 0, v("ffF") || 0, v("ffC") || 0];
+      var err = !name ? "Upiši naziv." : kcal == null || kcal < 0 || kcal > 1000 ? "Upiši energiju na 100 " + u + " (0 do 1000 kcal)." :
+        mac.some(function (x) { return x < 0 || x > 100; }) ? "Proteini, masti i UH su na 100 " + u + ", pa svaki mora biti između 0 i 100 g." :
+        (v("ffPortion") || 0) > 5000 ? "Porcija može biti najviše 5000 " + u + "." : "";
       $("ffErr").textContent = err; if (err) return;
       var food = { name: name, cat: $("ffCat").value, unit: $("ffUnit").value, kcal: kcal, p: v("ffP") || 0, f: v("ffF") || 0, c: v("ffC") || 0, portion: v("ffPortion") || 100 };
       if (d.id) food.id = d.id;
@@ -1206,7 +1287,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("foodTitle").textContent = dr.id ? "Izmeni jelo" : "Novo jelo";
     $("foodBody").innerHTML =
       '<div class="detail">' +
-        '<div class="field"><label for="bName">Naziv jela</label><input id="bName" placeholder="npr. Moj doručak" value="' + esc(dr.name) + '"></div>' +
+        '<div class="field"><label for="bName">Naziv jela</label><input id="bName" maxlength="120" placeholder="npr. Moj doručak" value="' + esc(dr.name) + '"></div>' +
         '<div><div class="group-h" style="margin-top:0">Sastojci za 1 porciju</div><ul class="ings" id="bItems"></ul></div>' +
         '<div class="field"><label for="bSearch">Dodaj namirnicu</label>' +
           '<div class="search">' + ICON_SEARCH + '<input id="bSearch" type="search" autocomplete="off" placeholder="Pretraži namirnice"></div>' +
@@ -1230,6 +1311,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       var name = dr.name.trim(), items = dr.items.filter(function (x) { return x[1] > 0; });
       if (!name) { $("bErr").textContent = "Upiši naziv jela."; return $("bName").focus(); }
       if (!items.length) { $("bErr").textContent = "Dodaj bar jednu namirnicu sa količinom."; return $("bSearch").focus(); }
+      if (items.length > 60) { $("bErr").textContent = "Jelo može imati najviše 60 namirnica."; return; }
       var d = { name: name, items: items };
       if (dr.id) d.id = dr.id;
       busy($("bSave"), KDB.saveDish(d), $("bErr")).then(function (id) {
@@ -1342,16 +1424,24 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           } else {
             push = Object.keys(state.days); // prvi put na ovom nalogu: prebaci sve uneto na ovom uređaju
           }
+          if (cloud && metaDirty) {
+            state.streak = local.streak || state.streak; state.best = Math.max(local.best || 0, state.best || 0);
+            state.weights = state.weights || local.weights;
+          }
           personalReady = true;
-          if (KDB.cloud && (push.length || metaDirty || !cloud)) KDB.savePersonal(state, push);
+          seedWeight();
+          updateStreak();                       // pre brisanja starih dana, da se niz ne izgubi
+          KDB.deleteDays(pruneDays());
+          KDB.savePersonal(state, push, teamDoc());
           dirtyDays = {}; metaDirty = false;
           try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
           render();
+          maybeAskWeight();
         }).catch(function (e) { KDB.error = e.message; renderAccount(); });
       }
       if (!uid && lastUid) {
         lastUid = null; state = emptyState(); openMeals = {}; personalReady = false;
-        closeSheet(); closeFoods(); render();
+        closeSheet(); closeFoods(); closeTeam(); closeWeight(); render();
       }
       renderAccount();
     }
@@ -1361,6 +1451,222 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }
   });
   renderAccount();
+
+  // ---------- 15 dana, niz dana (streak) ----------
+  // Obroci se čuvaju samo za poslednjih 15 dana. Niz dana se pamti kao {start, last},
+  // pa se ne gubi ni kad se stari dani obrišu.
+  var KEEP_DAYS = 15;
+  function windowStart() { return shift(todayKey(), -(KEEP_DAYS - 1)); }
+  function pruneDays() {
+    var ws = windowStart(), old = [];
+    Object.keys(state.days).forEach(function (k) { if (k < ws) { old.push(k); delete state.days[k]; } });
+    return old;
+  }
+  function hasItems(dd) {
+    if (!dd) return false;
+    for (var i = 0; i < MEALS.length; i++) if ((dd[MEALS[i].id] || []).length) return true;
+    return false;
+  }
+  function daysBetween(a, b) { return Math.round((parseKey(b) - parseKey(a)) / 86400000); }
+  // Niz = uzastopni dani sa bar jednom stavkom, zaključno sa danas (ili juče, ako danas još ništa).
+  function updateStreak() {
+    var t = todayKey(), ws = windowStart();
+    var end = hasItems(state.days[t]) ? t : shift(t, -1);
+    if (!hasItems(state.days[end])) return { count: 0, last: state.streak ? state.streak.last : "" };
+    var d = end, start;
+    for (;;) {
+      var prev = shift(d, -1);
+      if (hasItems(state.days[prev])) { d = prev; continue; }
+      if (prev >= ws) { start = d; break; }               // poznat prazan dan: niz počinje ovde
+      var st = state.streak;                               // dan je obrisan: oslanjamo se na zapamćeni niz
+      start = st && st.start && st.start <= prev && st.last >= prev ? st.start : d;
+      break;
+    }
+    state.streak = { start: start, last: end };
+    var count = daysBetween(start, end) + 1;
+    if (count > (state.best || 0)) state.best = count;
+    return { count: count, last: end };
+  }
+  // ono što ekipa vidi: ime, % današnjeg cilja i niz dana (ne i šta je ko jeo)
+  function teamDoc() {
+    var t = todayKey(), dd = state.days[t] || {}, eaten = 0;
+    MEALS.forEach(function (m) { (dd[m.id] || []).forEach(function (it) { eaten += it.kcal || 0; }); });
+    var sk = updateStreak();
+    return { name: KDB.user.name, day: t, pct: Math.min(999, Math.round(eaten / goal() * 100)), streak: sk.count, last: sk.last || "", best: state.best || 0 };
+  }
+
+  // ---------- Ekipa ----------
+  var FLAME = document.querySelector("#streakBadge .flame").outerHTML;
+  var teamUnsub = null, teamList = [];
+  function openTeam() {
+    if (!KDB.user) return;
+    $("teamBody").innerHTML = '<p class="team-sum">Učitavam…</p>';
+    $("teamOverlay").hidden = false; document.body.style.overflow = "hidden";
+    if (personalReady) KDB.savePersonal(state, [], teamDoc());   // da i ti budeš ažuran na listi
+    teamUnsub = KDB.watchTeam(function (list) { teamList = list; renderTeam(); });
+  }
+  function closeTeam() {
+    if (teamUnsub) { teamUnsub(); teamUnsub = null; }
+    $("teamOverlay").hidden = true; document.body.style.overflow = "";
+  }
+  $("openTeam").onclick = openTeam;
+  $("teamClose").onclick = closeTeam;
+  $("teamOverlay").addEventListener("click", function (e) { if (e.target === this) closeTeam(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("teamOverlay").hidden) closeTeam(); });
+
+  function renderTeam() {
+    if (!teamList) {
+      $("teamBody").innerHTML = '<p class="err">Ekipa trenutno nije dostupna. ' + esc(KDB.teamError || "") + '</p>';
+      return;
+    }
+    var t = todayKey(), y = shift(t, -1), me = KDB.myId();
+    var list = teamList.slice();
+    // ja uvek sa najsvežijim podacima, i kad upis u bazu još nije stigao
+    var mine = Object.assign({ uid: me }, teamDoc());
+    list = list.filter(function (m) { return m.uid !== me; }).concat([mine]);
+    list.forEach(function (m) {
+      m.today = m.day === t;
+      m.active = m.last && m.last >= y ? m.streak : 0;
+    });
+    list.sort(function (a, b) { return b.active - a.active || (b.today ? b.pct : -1) - (a.today ? a.pct : -1) || a.name.localeCompare(b.name, "sr"); });
+    var logged = list.filter(function (m) { return m.today && m.pct > 0; }).length;
+    var html = '<p class="team-sum">Danas je ' + logged + ' od ' + list.length + ' unelo obroke.</p><ul class="team">';
+    list.forEach(function (m) {
+      var pct = m.today ? m.pct : 0, cls = pct > 110 ? "over" : pct > 100 ? "near" : "";
+      html += '<li class="tm' + (m.uid === me ? " me" : "") + '"><span class="ava">' + esc(m.name.charAt(0)) + '</span>' +
+        '<div class="tm-main"><b>' + esc(m.name) + (m.uid === me ? " <small>(ti)</small>" : "") + '</b>' +
+        '<div class="tbar"><i class="' + cls + '" style="width:' + Math.min(100, pct) + '%"></i></div>' +
+        '<small>' + (pct > 0 ? pct + "% današnjeg cilja" : "Danas još ništa") + (m.best > 1 ? " · najbolji niz " + m.best : "") + '</small></div>' +
+        (m.active ? '<span class="tm-streak">' + FLAME + m.active + '<small>' + (m.active === 1 ? "dan" : "dana") + '</small></span>'
+                  : '<span class="tm-streak off">0<small>dana</small></span>') + '</li>';
+    });
+    html += '</ul><p class="src" style="margin-top:12px">Vidi se samo procenat današnjeg cilja i niz dana zaredom sa unetim obrocima, ne i šta je ko jeo.</p>';
+    $("teamBody").innerHTML = html;
+  }
+  KDB.onChange(function (what) { if (what === "team" && teamUnsub) renderTeam(); });
+
+  // ---------- težina ----------
+  // Čuva se: prvo merenje, poslednjih 8 merenja i mesečni prosek za starija (jedan broj po mesecu).
+  var KEEP_WEIGHTS = 8;
+  function weightKey() { return "kalorije.merenje.odlozeno." + (KDB.user ? KDB.user.id : ""); }
+  function lastWeight() { var w = state.weights; return w && w.entries && w.entries.length ? w.entries[w.entries.length - 1] : null; }
+  // upiše merenje u state (bez čuvanja)
+  function recordWeight(kg) {
+    var t = todayKey(), w = state.weights || { start: null, entries: [], months: {} };
+    w.entries = (w.entries || []).filter(function (e) { return e.d !== t; });
+    w.months = w.months || {};
+    if (!w.start) w.start = { d: t, kg: kg };
+    w.entries.push({ d: t, kg: kg });
+    w.entries.sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+    while (w.entries.length > KEEP_WEIGHTS) {             // najstarije merenje ide u mesečni prosek
+      var o = w.entries.shift(), ym = o.d.slice(0, 7), m = w.months[ym] || [0, 0];
+      w.months[ym] = [Math.round((m[0] * m[1] + o.kg) / (m[1] + 1) * 10) / 10, m[1] + 1];
+    }
+    state.weights = w;
+    if (state.profile) state.profile.weight = kg;          // nova težina menja i dnevnu potrošnju
+  }
+  function addWeight(kg) { recordWeight(kg); save(); render(); }
+  // težina iz profila se računa kao merenje: prvo merenje ili promena težine u profilu
+  function seedWeight() {
+    if (!state.profile) return false;
+    var l = lastWeight();
+    if (l && l.kg === state.profile.weight) return false;
+    recordWeight(state.profile.weight);
+    return true;
+  }
+  function weightDue() {
+    if (!state.profile) return false;
+    var l = lastWeight();
+    if (l && daysBetween(l.d, todayKey()) < 7) return false;
+    try { if (localStorage.getItem(weightKey()) === todayKey()) return false; } catch (e) {}
+    return true;
+  }
+  function anyOpen() { return !$("overlay").hidden || !$("foodOverlay").hidden || !$("teamOverlay").hidden || !$("weightOverlay").hidden; }
+  function maybeAskWeight() { if (weightDue() && !anyOpen()) openWeight(true); }
+  function openWeight(prompted) {
+    var l = lastWeight();
+    $("weightIntro").textContent = prompted
+      ? (l ? "Prošla je nedelja od poslednjeg merenja (" + dec(l.kg) + " kg, " + dateLabel(l.d).slice(0, -1) + "). Koliko imaš danas?" : "Upiši težinu jednom nedeljno, pa ćeš u profilu videti kako napreduješ.")
+      : "Upiši današnju težinu.";
+    $("wIn").value = l ? dec(l.kg) : state.profile ? dec(state.profile.weight) : "";
+    $("wErr").textContent = "";
+    $("wLater").hidden = !prompted;
+    $("weightOverlay").hidden = false; document.body.style.overflow = "hidden";
+  }
+  function closeWeight() { $("weightOverlay").hidden = true; if (!anyOpen()) document.body.style.overflow = ""; }
+  $("weightClose").onclick = function () { snoozeWeight(); closeWeight(); };
+  $("weightOverlay").addEventListener("click", function (e) { if (e.target === this) { snoozeWeight(); closeWeight(); } });
+  function snoozeWeight() { try { localStorage.setItem(weightKey(), todayKey()); } catch (e) {} }
+  $("wLater").onclick = function () { snoozeWeight(); closeWeight(); };
+  $("weightForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var kg = parseFloat(String($("wIn").value).replace(",", "."));
+    if (!(kg >= 30 && kg <= 300)) { $("wErr").textContent = "Unesi težinu između 30 i 300 kg."; return; }
+    addWeight(Math.round(kg * 10) / 10);
+    closeWeight();
+    if (!$("overlay").hidden) { openSheet(); }
+  });
+
+  function weightPoints() {
+    var w = state.weights; if (!w) return [];
+    var pts = Object.keys(w.months || {}).map(function (ym) { return { d: ym + "-15", kg: w.months[ym][0], avg: true }; });
+    return pts.concat(w.entries || []).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+  }
+  function weightChart(pts) {
+    var W = 320, H = 150, L = 34, Rm = 10, T = 12, B = 22;
+    var t0 = parseKey(pts[0].d).getTime(), t1 = parseKey(pts[pts.length - 1].d).getTime(), span = Math.max(t1 - t0, 1);
+    var ks = pts.map(function (p) { return p.kg; }), lo = Math.floor(Math.min.apply(null, ks) - 1), hi = Math.ceil(Math.max.apply(null, ks) + 1);
+    var X = function (p) { return pts.length === 1 ? (L + W - Rm) / 2 : L + (parseKey(p.d).getTime() - t0) / span * (W - L - Rm); };
+    var Y = function (kg) { return T + (hi - kg) / (hi - lo) * (H - T - B); };
+    var svg = '<svg class="wchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Grafikon težine">';
+    [lo, (lo + hi) / 2, hi].forEach(function (v) {
+      svg += '<line class="grid" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3) + '" text-anchor="end">' + dec(v) + '</text>';
+    });
+    var line = pts.map(function (p) { return X(p).toFixed(1) + "," + Y(p.kg).toFixed(1); }).join(" ");
+    if (pts.length > 1) {
+      svg += '<polygon class="area" points="' + X(pts[0]).toFixed(1) + ',' + (H - B) + ' ' + line + ' ' + X(pts[pts.length - 1]).toFixed(1) + ',' + (H - B) + '"/>';
+      svg += '<polyline class="ln" points="' + line + '"/>';
+    }
+    pts.forEach(function (p, i) { svg += '<circle class="pt' + (i === pts.length - 1 ? " last" : "") + '" cx="' + X(p).toFixed(1) + '" cy="' + Y(p.kg).toFixed(1) + '" r="' + (p.avg ? 3 : 4) + '"/>'; });
+    var lbl = function (p) { var d = parseKey(p.d); return p.avg ? MONTHS[d.getMonth()].slice(0, 3) + " " + String(d.getFullYear()).slice(2) : d.getDate() + "." + (d.getMonth() + 1) + "."; };
+    svg += '<text x="' + X(pts[0]) + '" y="' + (H - 6) + '" text-anchor="' + (pts.length === 1 ? "middle" : "start") + '">' + lbl(pts[0]) + '</text>';
+    if (pts.length > 1) svg += '<text x="' + X(pts[pts.length - 1]) + '" y="' + (H - 6) + '" text-anchor="end">' + lbl(pts[pts.length - 1]) + '</text>';
+    return svg + '</svg>';
+  }
+  function renderWeightSection() {
+    var el = $("weightSection");
+    if (!state.profile) { el.innerHTML = ""; return; }
+    var w = state.weights, l = lastWeight(), html = '<div class="wsec"><h3>Težina</h3>';
+    if (w && l) {
+      var diff = l.kg - w.start.kg, pts = weightPoints();
+      html += '<div class="wstats">' +
+        '<div><small>Početak</small><b>' + dec(w.start.kg) + '</b> kg</div>' +
+        '<div><small>Sada</small><b>' + dec(l.kg) + '</b> kg</div>' +
+        '<div><small>Promena</small><b>' + (diff > 0 ? "+" : diff < 0 ? "−" : "") + dec(Math.abs(diff)) + '</b> kg</div></div>' +
+        weightChart(pts) +
+        '<p class="src">Poslednje merenje: ' + dateLabel(l.d) + ' Starija merenja se čuvaju kao mesečni prosek.</p>';
+    } else {
+      html += '<p class="src">Još nema merenja. Upiši težinu jednom nedeljno, pa ćeš ovde videti grafikon.</p>';
+    }
+    el.innerHTML = html + '<button class="btn ghost" type="button" id="wAdd">Upiši merenje</button></div>';
+    $("wAdd").onclick = function () { openWeight(false); };
+  }
+
+  // ---------- automatsko osvežavanje nove verzije ----------
+  // version.json se uvek čita bez keša; ako je na sajtu novija verzija, stranica se sama ponovo učita.
+  var lastVersionCheck = 0;
+  function checkVersion() {
+    if (Date.now() - lastVersionCheck < 60000 || anyOpen()) return;
+    lastVersionCheck = Date.now();
+    fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j || !j.v || j.v === APP_VERSION) return;
+      var k = "kalorije.osvezeno." + j.v;
+      try { if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); } catch (e) {}
+      fetch("./", { cache: "reload" }).catch(function () {}).then(function () { location.reload(); });
+    }).catch(function () {});
+  }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkVersion(); });
+  setTimeout(checkVersion, 3000);
 
   // ---------- izvoz u PDF i deljenje ----------
   // Biblioteka i font se učitaju unapred (posle prijave), da bi klik odmah otvorio deljenje:

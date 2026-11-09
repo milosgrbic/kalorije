@@ -1,36 +1,83 @@
 rules_version = '2';
 // Pravila pristupa za Kalorije. Kopiraj ceo fajl u Firebase konzolu:
 // Firestore Database -> Rules -> Publish.
+//
+// Ko šta sme:
+//  - namirnice, jela: svi prijavljeni čitaju i dodaju; menja i briše samo autor
+//  - ekipa/{uid}: svi prijavljeni čitaju (ime, % cilja, niz dana); piše samo vlasnik
+//  - users/{uid} i users/{uid}/dani: samo vlasnik
+// Pored toga, svaki upis mora da ima samo poznata polja, pravog tipa i razumne veličine,
+// da niko ne bi mogao da ubaci smeće ili ogromne zapise.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Prijavljen korisnik sa nalogom koji je napravio admin (<id>@kalorije.app)
+    // Prijavljen korisnik sa nalogom <id>@kalorije.app
     function signedIn() {
       return request.auth != null && request.auth.token.email.matches('.*@kalorije[.]app$');
     }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
     function ownsNew() { return request.resource.data.createdBy == request.auth.uid; }
     function ownsOld() { return resource.data.createdBy == request.auth.uid; }
 
-    // Zajedničke namirnice i jela: svi prijavljeni čitaju i dodaju,
-    // menja i briše samo onaj ko je napravio.
+    function str(v, max) { return v is string && v.size() <= max; }
+    function num(v, max) { return v is number && v >= 0 && v <= max; }
+    function day(v) { return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function stamp(d, k) { return !(k in d) || d[k] is timestamp; }
+
+    function validFood() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'cat', 'unit', 'kcal', 'p', 'f', 'c', 'portion', 'createdBy', 'createdByName', 'createdAt', 'updatedAt'])
+        && str(d.name, 120) && d.name.size() > 0 && str(d.cat, 60) && d.unit in ['g', 'ml']
+        && num(d.kcal, 1000) && num(d.p, 100) && num(d.f, 100) && num(d.c, 100) && num(d.portion, 5000)
+        && str(d.createdByName, 40) && stamp(d, 'createdAt') && stamp(d, 'updatedAt');
+    }
+    function validDish() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'items', 'createdBy', 'createdByName', 'createdAt', 'updatedAt'])
+        && str(d.name, 120) && d.name.size() > 0 && d.items is list && d.items.size() > 0 && d.items.size() <= 60
+        && str(d.createdByName, 40) && stamp(d, 'createdAt') && stamp(d, 'updatedAt');
+    }
+
     match /namirnice/{id} {
       allow read: if signedIn();
-      allow create: if signedIn() && ownsNew();
-      allow update: if signedIn() && ownsOld() && ownsNew();
+      allow create: if signedIn() && ownsNew() && validFood();
+      allow update: if signedIn() && ownsOld() && ownsNew() && validFood();
       allow delete: if signedIn() && ownsOld();
     }
     match /jela/{id} {
       allow read: if signedIn();
-      allow create: if signedIn() && ownsNew();
-      allow update: if signedIn() && ownsOld() && ownsNew();
+      allow create: if signedIn() && ownsNew() && validDish();
+      allow update: if signedIn() && ownsOld() && ownsNew() && validDish();
       allow delete: if signedIn() && ownsOld();
     }
 
-    // Lični podaci (profil i obroci): samo vlasnik.
+    // Javni sažetak za ekran Ekipa
+    match /ekipa/{uid} {
+      allow read: if signedIn();
+      allow delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['name', 'day', 'pct', 'streak', 'last', 'best', 'updatedAt'])
+        && str(request.resource.data.name, 40) && day(request.resource.data.day)
+        && num(request.resource.data.pct, 999) && num(request.resource.data.streak, 100000)
+        && num(request.resource.data.best, 100000) && str(request.resource.data.last, 10)
+        && stamp(request.resource.data, 'updatedAt');
+    }
+
+    // Lični podaci: profil, nedavno, niz dana, težina
     match /users/{uid} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
-      match /dani/{day} {
-        allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['name', 'updatedAt', 'profile', 'recent', 'recentDishes', 'streak', 'best', 'weights'])
+        && (!('recent' in request.resource.data) || (request.resource.data.recent is list && request.resource.data.recent.size() <= 50))
+        && (!('recentDishes' in request.resource.data) || (request.resource.data.recentDishes is list && request.resource.data.recentDishes.size() <= 50));
+
+      // Obroci po danima (aplikacija čuva poslednjih 15 dana)
+      match /dani/{d} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && day(d)
+          && request.resource.data.keys().hasOnly(['meals'])
+          && request.resource.data.meals is map
+          && request.resource.data.meals.keys().hasOnly(['dorucak', 'rucak', 'vecera', 'uzine', 'ostalo']);
       }
     }
   }

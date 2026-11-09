@@ -66,13 +66,22 @@ namirnice i jela u zajedničku listu. Tuđe profile i obroke ni tada ne može da
 
 ## Kako su podaci organizovani
 
-| Gde | Šta | Ko vidi / menja |
-|---|---|---|
-| `foods.js`, `jela.js` | standardna lista | svi vide, menja se samo u repozitorijumu |
-| `korisnici.js` | spisak korisnika (otisci imena) | menja se samo u repozitorijumu |
-| `namirnice/{id}` | namirnice koje su dodali korisnici | svi prijavljeni vide i dodaju, menja/briše autor |
-| `jela/{id}` | jela koja su napravili korisnici | svi prijavljeni vide i dodaju, menja/briše autor |
-| `users/{uid}` | profil, nedavno izabrano | samo vlasnik |
-| `users/{uid}/dani/{datum}` | obroci za taj dan | samo vlasnik |
+| Gde | Šta | Ko vidi / menja | Koliko dugo |
+|---|---|---|---|
+| `foods.js`, `jela.js` | standardna lista | svi vide, menja se samo u repozitorijumu | zauvek |
+| `korisnici.js` | spisak korisnika (otisci imena) | menja se samo u repozitorijumu | zauvek |
+| `namirnice/{id}` | namirnice koje su dodali korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |
+| `jela/{id}` | jela koja su napravili korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |
+| `ekipa/{uid}` | ime, % današnjeg cilja, niz dana, najbolji niz | svi prijavljeni vide, piše vlasnik | zauvek (jedan mali zapis po osobi) |
+| `users/{uid}` | profil, nedavno izabrano, niz dana (datum početka), najbolji niz, težina | samo vlasnik | zauvek |
+| `users/{uid}/dani/{datum}` | obroci za taj dan | samo vlasnik | **15 dana**, stariji se brišu sami |
+
+Težina se čuva štedljivo: prvo merenje, poslednjih 8 merenja i po jedan prosek za svaki stariji mesec.
 
 Namirnica koju koristi neko jelo ne može da se obriše (aplikacija to sprečava), da se ne bi pokvarila tuđa jela.
+
+## Pravila (firestore.rules)
+
+Pravila pored „ko sme šta“ proveravaju i **oblik podataka**: dozvoljena su samo poznata polja,
+brojevi u razumnim granicama i nazivi do 120 znakova. Posle svake izmene fajla `firestore.rules`
+treba ga ponovo nalepiti u **Firestore Database → Rules → Publish**.
