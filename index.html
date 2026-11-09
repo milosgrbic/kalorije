@@ -630,7 +630,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
       <div class="field"><label for="wIn">Težina danas (kg)</label>
         <div class="qty"><div class="inwrap"><input id="wIn" type="text" inputmode="decimal" autocomplete="off"><span class="u">kg</span></div></div></div>
       <details class="obimi" id="obimiBox">
-        <summary>Obimi i % masti <small>(nije obavezno)</small></summary>
+        <summary>Obimi <small>(nije obavezno)</small></summary>
         <div class="obimi-grid" id="obimiGrid"></div>
       </details>
       <p class="err" id="wErr"></p>
@@ -651,14 +651,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-13"></script>
-<script src="korisnici.js?v=2026.11.09-13"></script>
-<script src="db.js?v=2026.11.09-13"></script>
-<script src="foods.js?v=2026.11.09-13"></script>
+<script src="firebase-config.js?v=2026.11.09-14"></script>
+<script src="korisnici.js?v=2026.11.09-14"></script>
+<script src="db.js?v=2026.11.09-14"></script>
+<script src="foods.js?v=2026.11.09-14"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-13";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-14";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -1847,9 +1847,8 @@ form { display: flex; flex-direction: column; gap: 14px; }
     { k: "nadlaktica", name: "Nadlaktica", unit: "cm", min: 10, max: 100 },
     { k: "butina", name: "Butina", unit: "cm", min: 20, max: 150 },
     { k: "vrat", name: "Vrat", unit: "cm", min: 15, max: 80 },
-    { k: "list", name: "List (noga)", unit: "cm", min: 15, max: 80 },
-    { k: "mast", name: "Telesna mast", unit: "%", min: 2, max: 70 }
-  ];
+    { k: "list", name: "List (noga)", unit: "cm", min: 15, max: 80 }
+  ];   // % masti je uklonjen iz prikaza; ako je negde ranije upisan, ostaje sačuvan u bazi
   var measures = {}, measuresLoaded = false, measSel = "kg";
   function setMeasure(d, fields) {
     measures[d] = Object.assign({}, measures[d], fields);

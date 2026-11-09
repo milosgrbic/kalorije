@@ -74,7 +74,7 @@ namirnice i jela u zajedničku listu. Tuđe profile i obroke ni tada ne može da
 | `jela/{id}` | jela koja su napravili korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |
 | `ekipa/{uid}` | ime, % današnjeg cilja, niz dana, najbolji niz, dani bez cigare | svi prijavljeni vide, piše vlasnik | zauvek (jedan mali zapis po osobi) |
 | `users/{uid}` | profil, nedavno izabrano, niz dana (datum početka), najbolji niz, težina, dan poslednje cigare | samo vlasnik | zauvek |
-| `users/{uid}/merenja/{datum}` | težina i obimi (struk, kukovi, grudi, nadlaktica, butina, vrat, list, % masti) | samo vlasnik | **zauvek** |
+| `users/{uid}/merenja/{datum}` | težina i obimi (struk, kukovi, grudi, nadlaktica, butina, vrat, list; ranije i % masti) | samo vlasnik | **zauvek** |
 | `users/{uid}/dani/{datum}` | obroci i vežbanje za taj dan | samo vlasnik | **15 dana**, stariji se brišu sami |
 
 Puna istorija merenja je u `merenja`. Polje `weights` u `users/{uid}` (prvo merenje, poslednjih 8 i mesečni prosek) se i dalje održava kao kratak sažetak.

@@ -18,7 +18,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Ekipa** (ikonica karike): vidimo jedno drugo: % današnjeg cilja, niz dana i dane bez cigare (ne i šta je ko jeo).
 - **Bez cigare** (dugme sa cigaretom i brojem dana u baneru, za korisnike sa `cigare: true` u `korisnici.js`): dani od poslednje cigare i ušteđen novac (450 din dnevno); dugme „Prekršila sam“ vraća brojanje na nulu.
 - **Niz dana** (vatrica pored imena): broj uzastopnih dana sa bar jednim unetim obrokom.
-- **Merenja**: težina i obimi (struk, kukovi, grudi, nadlaktica, butina, vrat, list, % masti); jednom nedeljno aplikacija ponudi merenje; u profilu je grafikon za svaku vrstu. Sva merenja se čuvaju zauvek.
+- **Merenja**: težina i obimi (struk, kukovi, grudi, nadlaktica, butina, vrat, list); jednom nedeljno aplikacija ponudi merenje; u profilu je grafikon za svaku vrstu. Sva merenja se čuvaju zauvek.
 - **Izvezi**: dugme na dnu pravi PDF dana koji je otvoren i otvara meni za deljenje (Viber, WhatsApp, mejl…).
 - **Namirnice i jela**: pretraga, makroi, nedavno izabrano. Jelo je skup namirnica i sabira se po porcijama.
 - **Namirnice**: standardna lista (`foods.js`, niko je ne briše) i one koje dodamo mi. **Jela** pravimo sami (skup namirnica sa količinama); vidimo ih oboje, briše ih onaj ko ih je napravio. Pamte se 3 poslednje izabrane namirnice i 3 jela.
