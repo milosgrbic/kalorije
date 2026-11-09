@@ -8,7 +8,8 @@
 <meta name="theme-color" content="#1f5c3a">
 <meta name="apple-mobile-web-app-title" content="bolja.ja">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon-64.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>bolja.ja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -125,11 +126,14 @@ main {
 .stat b { display: block; font-family: var(--display); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
 .stat small { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .stat.over b { color: var(--over); }
-.exbtn { width: 100%; margin-top: 12px; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px;
-  border: 1px dashed color-mix(in srgb, var(--ok) 55%, transparent); background: color-mix(in srgb, var(--ok) 7%, transparent); color: var(--ink); font-weight: 600; }
-.exbtn svg { color: var(--ok); flex: none; }
-.exbtn span { flex: 1; text-align: left; }
-.exbtn b { font-family: var(--display); color: var(--ok); font-variant-numeric: tabular-nums; }
+.gauge-card { position: relative; }
+.exfab { position: absolute; top: 12px; right: 12px; z-index: 1; height: 44px; min-width: 44px; padding: 0 12px; border-radius: 22px;
+  display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent);
+  background: color-mix(in srgb, var(--ok) 9%, var(--surface)); color: var(--ok); font-weight: 700; }
+.exfab:not(.on) { width: 44px; padding: 0; }
+.exfab b { font-family: var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.exfab b:empty { display: none; }
+.exfab.on { background: var(--ok); color: #fff; border-color: var(--ok); }
 .hint {
   margin-top: 12px; font-size: 0.85rem; color: var(--muted); text-align: center;
 }
@@ -252,6 +256,10 @@ form { display: flex; flex-direction: column; gap: 14px; }
 .brand-sub { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; }
 #greet { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 430px) { #greet .hi { display: none; } }
+.smokebtn { padding: 0 12px; gap: 5px; }
+.smokebtn b { font-family: var(--display); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.smokebtn b:empty { display: none; }
+.smokebtn:has(b:empty) { width: 44px; padding: 0; justify-content: center; }
 .streak { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; opacity: 1; color: var(--brand-ink); font-variant-numeric: tabular-nums; }
 .flame { width: 16px; height: 16px; flex: none; }
 
@@ -446,9 +454,9 @@ form { display: flex; flex-direction: column; gap: 14px; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5a4 4 0 005.66 0l3.2-3.2a4 4 0 00-5.66-5.66l-1.1 1.1"/><path d="M13.5 10.5a4 4 0 00-5.66 0l-3.2 3.2a4 4 0 005.66 5.66l1.1-1.1"/></svg>
       <span>Ekipa</span>
     </button>
-    <button class="iconbtn icon-narrow" id="openSmoke" aria-label="Bez cigare" hidden>
+    <button class="iconbtn smokebtn" id="openSmoke" aria-label="Dani bez cigare" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="15" height="4" rx="1"/><path d="M13 14v4M19.5 14v4M22 14v4M18 10c0-1.5 1.5-1.5 1.5-3S18 5.5 18 4M21 10c0-1.5 1.5-1.5 1.5-3S21 5.5 21 4"/></svg>
-      <span>Cigare</span>
+      <b id="smokeNum"></b>
     </button>
     <button class="iconbtn icon-narrow" id="openFoods" aria-label="Namirnice i jela">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
@@ -470,6 +478,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     </div>
 
     <section class="gauge-card" aria-label="Dnevni unos kalorija">
+      <button class="exfab" id="exBtn" type="button" aria-label="Vežbanje"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg><b id="exVal"></b></button>
       <div class="gauge">
         <svg id="gaugeSvg" viewBox="-28 4 356 178"role="img" aria-labelledby="gaugeLabel">
           <title id="gaugeLabel">Unete kalorije</title>
@@ -492,7 +501,6 @@ form { display: flex; flex-direction: column; gap: 14px; }
         <div class="mac c"><i></i>UH <b id="mC">0 g</b></div>
         <div class="mac f"><i></i>Masti <b id="mF">0 g</b></div>
       </div>
-      <button class="exbtn" id="exBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg><span id="exLbl">Dodaj vežbanje</span><b id="exVal"></b></button>
       <p class="hint" id="hint">Cilj je privremeno 2.000 kcal. <button id="hintBtn">Popuni profil</button> da izračunamo tvoju potrošnju.</p>
     </section>
 
@@ -549,9 +557,13 @@ form { display: flex; flex-direction: column; gap: 14px; }
           <div class="field" id="weightField"><label for="weight">Težina (kg)</label><input id="weight" type="text" inputmode="decimal" autocomplete="off" placeholder="80"></div>
         </div>
         <div class="field"><label for="dob">Datum rođenja</label><input id="dob" class="dmy" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="DD/MM/GGGG"></div>
-        <div class="row2" id="lossFields">
-          <div class="field"><label for="rate">Mršavljenje nedeljno</label>
+        <div class="field"><label for="goalSel">Cilj</label>
+          <select id="goalSel"><option value="mrsavljenje">Mršavljenje</option><option value="misici">Održavanje kilaže i izgradnja mišića</option></select></div>
+        <div class="row2">
+          <div class="field" id="rateField"><label for="rate">Mršavljenje nedeljno</label>
             <select id="rate"><option value="0.2">0,2 kg</option><option value="0.3" selected>0,3 kg</option><option value="0.4">0,4 kg</option><option value="0.5">0,5 kg</option></select></div>
+          <div class="field" id="surplusField"><label for="surplus">Iznad održavanja</label>
+            <select id="surplus"><option value="0" selected>0 kcal</option><option value="100">+100 kcal</option><option value="200">+200 kcal</option><option value="300">+300 kcal</option></select></div>
           <div class="field"><label for="ppk">Proteini (g po kg)</label><div class="inwrap unitin"><input id="ppk" type="text" inputmode="decimal" autocomplete="off" placeholder="za 130 g"><span class="u">g/kg</span></div></div>
         </div>
         <p class="src" id="ppkHint"></p>
@@ -638,15 +650,15 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-8"></script>
-<script src="korisnici.js?v=2026.11.09-8"></script>
-<script src="db.js?v=2026.11.09-8"></script>
-<script src="foods.js?v=2026.11.09-8"></script>
-<script src="jela.js?v=2026.11.09-8"></script>
+<script src="firebase-config.js?v=2026.11.09-9"></script>
+<script src="korisnici.js?v=2026.11.09-9"></script>
+<script src="db.js?v=2026.11.09-9"></script>
+<script src="foods.js?v=2026.11.09-9"></script>
+<script src="jela.js?v=2026.11.09-9"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-8";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-9";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -685,6 +697,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function fmt(n) { return Math.round(n).toLocaleString("sr-RS"); }
+  function dec2(n) { return (Math.round(n * 100) / 100).toLocaleString("sr-RS", { maximumFractionDigits: 2 }); }
   function dec(n) { return (Math.round(n * 10) / 10).toLocaleString("sr-RS", { maximumFractionDigits: 1 }); }
 
   // ---------- dates ----------
@@ -726,12 +739,15 @@ form { display: flex; flex-direction: column; gap: 14px; }
   // Cilj: za korisnike sa cilj: "mrsavljenje" (korisnici.js) potrošnja − 500 kcal (~0,5 kg nedeljno),
   // ali ne ispod 1.200 (žene) / 1.500 (muškarci); ostali održavanje = potrošnja.
   function me() { var id = KDB.user && KDB.user.id; return (window.KORISNICI || []).filter(function (u) { return u.id === id; })[0] || {}; }
-  function losing() { return me().cilj === "mrsavljenje"; }
+  // cilj se bira u profilu; početna vrednost iz korisnici.js (mrsavljenje / misici)
+  function goalType() { return (state.profile && state.profile.goal) || me().cilj || "misici"; }
+  function losing() { return goalType() === "mrsavljenje"; }
+  function surplus() { return state.profile && state.profile.surplus > 0 ? state.profile.surplus : 0; }
   function goal() {
     if (!state.profile) return 2000;
     var t = Math.round(calc(state.profile).tdee);
     // 1 kg masti ≈ 7.700 kcal, pa je 0,3 kg nedeljno ≈ 330 kcal manje dnevno
-    return losing() ? Math.max(state.profile.sex === "m" ? 1500 : 1200, t - deficit()) : t;
+    return losing() ? Math.max(state.profile.sex === "m" ? 1500 : 1200, t - deficit()) : t + surplus();
   }
   function lossRate() { return state.profile && state.profile.rate > 0 ? state.profile.rate : 0.3; }   // kg nedeljno
   function deficit() { return Math.round(lossRate() * 7700 / 7 / 10) * 10; }
@@ -743,11 +759,13 @@ form { display: flex; flex-direction: column; gap: 14px; }
     if (!state.profile) return 0;
     return Math.round(proteinWeight() * proteinPerKg() / 5) * 5;
   }
-  // Za mršavljenje: ako proteini po kg još nisu podešeni, početni cilj je 130 g dnevno.
+  // Početni proteini dok ih korisnik sam ne podesi: mršavljenje 130 g dnevno, mišići 1,8 g po kg.
+  // Automatski izračunata vrednost se preračuna ako se promeni cilj.
   function initProtein() {
     var p = state.profile;
-    if (!p || !losing() || p.ppk > 0) return false;
-    p.ppk = Math.round(130 / proteinWeight() * 10) / 10;
+    if (!p || (p.ppk > 0 && !(p.ppkAuto && p.ppkGoal !== goalType()))) return false;
+    p.ppk = losing() ? Math.round(130 / proteinWeight() * 100) / 100 : 1.8;
+    p.ppkAuto = true; p.ppkGoal = goalType();
     return true;
   }
 
@@ -804,14 +822,17 @@ form { display: flex; flex-direction: column; gap: 14px; }
     var sk = updateStreak();
     $("streakBadge").hidden = !KDB.user || sk.count < 1;
     $("openSmoke").hidden = !smokeUser();
+    $("smokeNum").textContent = smokeOn() ? smokeDays() : "";
+    $("openSmoke").setAttribute("aria-label", smokeOn() ? smokeDays() + " " + daysWord(smokeDays()) + " bez cigare" : "Bez cigare");
     $("streakNum").textContent = sk.count;
 
     var burned = burnedOn(day), g = goal();   // vežbanje je bonus, ne menja cilj
     var eaten = MEALS.reduce(function (s, m) { return s + mealTotal(m.id); }, 0);
     $("gNum").textContent = fmt(eaten);
     $("gUnit").textContent = "od " + fmt(g) + " kcal";
-    $("exLbl").textContent = burned ? "Vežbanje · bonus" : "Dodaj vežbanje";
     $("exVal").textContent = burned ? fmt(burned) + " kcal" : "";
+    $("exBtn").classList.toggle("on", !!burned);
+    $("exBtn").setAttribute("aria-label", burned ? "Vežbanje: " + fmt(burned) + " kcal" : "Dodaj vežbanje");
     $("sGoal").textContent = fmt(g);
     $("sEaten").textContent = fmt(eaten);
     var left = g - eaten;
@@ -917,7 +938,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     if (p) {
       $(p.sex === "m" ? "sexM" : "sexF").checked = true;
       $("height").value = p.height; $("weight").value = dec(p.weight); $("dob").value = toDMY(p.dob);
-      $("rate").value = String(lossRate()); $("ppk").value = dec(proteinPerKg());
+      $("rate").value = String(lossRate()); $("ppk").value = dec2(proteinPerKg());
       $("activity").value = String(p.activity);
       $("qwIn").value = dec(p.weight);
       $("profSummary").innerHTML = '<span><b>Moji podaci</b>' + (p.sex === "m" ? "Muško" : "Žensko") + " · " + p.height + " cm · " +
@@ -928,7 +949,9 @@ form { display: flex; flex-direction: column; gap: 14px; }
       $("profileForm").reset();
     }
     $("qwForm").hidden = !p;
-    $("lossFields").hidden = !losing();
+    $("goalSel").value = goalType();
+    $("surplus").value = String(surplus());
+    goalFields();
     ppkHint();
     $("weightField").hidden = !!p;          // težina se posle unosi gore, kao merenje
     $("profDetails").classList.toggle("first", !p);
@@ -957,24 +980,33 @@ form { display: flex; flex-direction: column; gap: 14px; }
     else if (!(h >= 100 && h <= 250)) err = "Unesi visinu između 100 i 250 cm.";
     else if (!(w >= 30 && w <= 300)) err = "Unesi težinu između 30 i 300 kg.";
     else if (!dob || age(dob) < 10 || age(dob) > 110) err = "Unesi datum rođenja kao DD/MM/GGGG, npr. 17/04/1995.";
-    else if (losing() && $("ppk").value.trim() && !(ppk >= 0.8 && ppk <= 2.5)) err = "Proteini po kg treba da budu između 0,8 i 2,5.";
+    else if ($("ppk").value.trim() && !(ppk >= 0.8 && ppk <= 2.5)) err = "Proteini po kg treba da budu između 0,8 i 2,5.";
     $("err").textContent = err;
     if (err) return;
+    var prevProfile = state.profile;
     state.profile = { sex: sex, height: h, weight: w, dob: dob, activity: parseFloat($("activity").value) };
-    if (losing()) {
-      state.profile.rate = parseFloat($("rate").value);
-      if (ppk > 0) state.profile.ppk = Math.round(ppk * 10) / 10; else initProtein();
-    }
+    var old = prevProfile || {};
+    state.profile.goal = $("goalSel").value;
+    state.profile.rate = parseFloat($("rate").value);
+    state.profile.surplus = parseInt($("surplus").value, 10) || 0;
+    var typed = Math.round(ppk * 100) / 100;
+    if (ppk > 0 && !(old.ppkAuto && typed === old.ppk)) { state.profile.ppk = typed; state.profile.ppkAuto = false; }
+    else { state.profile.ppk = old.ppk; state.profile.ppkAuto = old.ppkAuto; state.profile.ppkGoal = old.ppkGoal; initProtein(); }
     seedWeight();
     save(); render(); openSheet();          // posle čuvanja se podaci skupe
   });
 
   function ppkHint() {
     var v = parseFloat(String($("ppk").value).replace(",", ".")), p = state.profile;
-    $("ppkHint").textContent = losing() && p && v > 0 ? "= " + Math.round(proteinWeight() * v / 5) * 5 + " g proteina dnevno" : "";
+    $("ppkHint").textContent = p && v > 0 ? "= " + Math.round(proteinWeight() * v / 5) * 5 + " g proteina dnevno" : "";
     $("ppkHint").hidden = !$("ppkHint").textContent;
   }
   $("ppk").addEventListener("input", ppkHint);
+  function goalFields() {
+    var lose = $("goalSel").value === "mrsavljenje";
+    $("rateField").hidden = !lose; $("surplusField").hidden = lose;
+  }
+  $("goalSel").addEventListener("change", goalFields);
   // DD/MM/GGGG: kose crte se ubacuju same
   function dmyInput(el) {
     el.addEventListener("input", function () {
@@ -999,8 +1031,9 @@ form { display: flex; flex-direction: column; gap: 14px; }
         '<div class="res"><small>Dnevni cilj</small><b>' + fmt(goal()) + '</b><span>kcal · proteini ' + proteinGoal() + ' g</span></div>' +
       '</div>' +
       '<p class="note">Potrošnja sa aktivnošću je ' + fmt(r.tdee) + ' kcal (Mifflin-St Jeor). ' +
-        (losing() ? "Cilj je " + deficit() + " kcal manje, za gubitak oko " + dec(lossRate()) + " kg nedeljno. Proteini " + dec(proteinPerKg()) + " g po kg čuvaju mišiće dok se gubi mast."
-                  : "Cilj je održavanje težine. Proteini " + dec(proteinPerKg()) + " g po kg.") + ' Tempo i proteini se menjaju u „Moji podaci“.</p>';
+        (losing() ? "Cilj je " + deficit() + " kcal manje, za gubitak oko " + dec(lossRate()) + " kg nedeljno. Proteini " + dec2(proteinPerKg()) + " g po kg čuvaju mišiće dok se gubi mast."
+                  : "Cilj je održavanje kilaže" + (surplus() ? " uz " + surplus() + " kcal viška" : "") + " i izgradnja mišića: proteini " + dec2(proteinPerKg()) + " g po kg i trening snage.") +
+        ' Cilj, tempo i proteini se menjaju u „Moji podaci“.</p>';
   }
 
 
@@ -1850,8 +1883,8 @@ form { display: flex; flex-direction: column; gap: 14px; }
   function openExercise() {
     var b = burnedOn(day);
     $("exTitle").textContent = day === todayKey() ? "Vežbanje danas" : "Vežbanje · " + dateLabel(day).slice(0, -1);
-    $("exForm").querySelector(".w-intro").textContent = "Upiši koliko si kalorija " + gw("potrošio", "potrošila") +
-      " vežbanjem za ovaj dan (sa sata, aplikacije ili sprave). To je bonus: ne menja dnevni cilj i ne daje dodatne kalorije za hranu.";
+    $("exForm").querySelector(".w-intro").textContent = "Koliko si kalorija " + gw("potrošio", "potrošila") +
+      " vežbanjem? Upiši broj sa sata, aplikacije ili sprave. To je bonus: ne menja dnevni cilj.";
     $("exIn").value = b ? b : "";
     $("exErr").textContent = "";
     $("exDel").hidden = !b;

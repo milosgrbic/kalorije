@@ -12,11 +12,11 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Obroci**: doručak, ručak, večera, užina i ostalo. Dodavanje iz liste (g ili ml) ili ručno.
   Čuva se poslednjih 15 dana (strelicama gore se lista unazad); stariji dani se brišu,
   ali niz dana, profil, težina i namirnice i jela koje ste napravili ostaju zauvek.
-- **Vežbanje**: dugme ispod brzinomera; potrošene kalorije su bonus i ne menjaju dnevni cilj.
-- **Cilj** (Miloš i Aleksandra, `cilj: "mrsavljenje"` u `korisnici.js`): dnevni cilj je potrošnja minus izabrani tempo mršavljenja (početno 0,3 kg nedeljno ≈ 330 kcal, ne ispod 1.200 / 1.500); proteini se podešavaju kao g po kg (početno 130 g dnevno). Oba se menjaju u profilu, „Moji podaci“.
+- **Vežbanje**: okruglo dugme sa tegom u uglu brzinomera; potrošene kalorije su bonus i ne menjaju dnevni cilj.
+- **Cilj** (bira se u profilu, „Moji podaci“; početno iz `korisnici.js`): **mršavljenje** = potrošnja minus izabrani tempo (početno 0,3 kg nedeljno ≈ 330 kcal, ne ispod 1.200 / 1.500), proteini početno 130 g; **održavanje i mišići** = potrošnja + izabrani višak (početno 0), proteini početno 1,8 g/kg. Proteini se uvek mogu podesiti kao g po kg.
 - **Datumi** se unose kao DD/MM/GGGG.
 - **Ekipa** (ikonica karike): vidimo jedno drugo: % današnjeg cilja, niz dana i dane bez cigare (ne i šta je ko jeo).
-- **Bez cigare** (ikonica cigare, za korisnike sa `cigare: true` u `korisnici.js`): dani od poslednje cigare i ušteđen novac (450 din dnevno); dugme „Prekršila sam“ vraća brojanje na nulu.
+- **Bez cigare** (dugme sa cigaretom i brojem dana u baneru, za korisnike sa `cigare: true` u `korisnici.js`): dani od poslednje cigare i ušteđen novac (450 din dnevno); dugme „Prekršila sam“ vraća brojanje na nulu.
 - **Niz dana** (vatrica pored imena): broj uzastopnih dana sa bar jednim unetim obrokom.
 - **Težina**: jednom nedeljno aplikacija ponudi merenje; u profilu je grafikon napretka.
 - **Izvezi**: dugme na dnu pravi PDF dana koji je otvoren i otvara meni za deljenje (Viber, WhatsApp, mejl…).
@@ -32,6 +32,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 | `korisnici.js` | spisak korisnika (otisci korisničkih imena, ne sama imena) |
 | `db.js` | prijava i čuvanje podataka: lokalno ili Firebase |
 | `firebase-config.js` | podešavanja baze (prazno = lokalni režim) |
+| `ikone/`, `icon-*.png`, `favicon*` | avokado ikonica (original u `ikone/`) |
 | `lib/` | jsPDF i font za PDF izvoz (DejaVu Sans, sa č ć đ š ž) |
 | `version.json`, `alati/nova-verzija.py` | oznaka verzije; pre svake objave pokrenuti `python3 alati/nova-verzija.py`, pa se aplikacija svima sama osveži |
 | `firestore.rules` | pravila ko sme šta u bazi |
