@@ -291,6 +291,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
 .smoke-date { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 .tm-smoke { color: var(--muted); }
 
+/* merenja: obimi */
+.obimi > summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+.obimi > summary small { color: var(--muted); font-weight: 500; }
+.obimi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.mchips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.mchips .chip { white-space: nowrap; flex: none; }
+.mchips .chip.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+
 /* težina */
 .w-intro { margin: 0; color: var(--muted); }
 .wsec { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
@@ -621,6 +629,10 @@ form { display: flex; flex-direction: column; gap: 14px; }
       <p class="w-intro" id="weightIntro"></p>
       <div class="field"><label for="wIn">Težina danas (kg)</label>
         <div class="qty"><div class="inwrap"><input id="wIn" type="text" inputmode="decimal" autocomplete="off"><span class="u">kg</span></div></div></div>
+      <details class="obimi" id="obimiBox">
+        <summary>Obimi i % masti <small>(nije obavezno)</small></summary>
+        <div class="obimi-grid" id="obimiGrid"></div>
+      </details>
       <p class="err" id="wErr"></p>
       <button class="btn" type="submit">Sačuvaj merenje</button>
       <button class="btn ghost" type="button" id="wLater">Podseti me sutra</button>
@@ -1628,10 +1640,12 @@ form { display: flex; flex-direction: column; gap: 14px; }
           try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
           render();
           maybeAskWeight();
+          loadMeasuresOnce(uid);
         }).catch(function (e) { KDB.error = e.message; renderAccount(); });
       }
       if (!uid && lastUid) {
         lastUid = null; state = emptyState(); openMeals = {}; personalReady = false;
+        measures = {}; measuresLoaded = false; measSel = "kg";
         closeSheet(); closeFoods(); closeTeam(); closeWeight(); closeExercise(); closeSmoke(); render();
       }
       renderAccount();
@@ -1759,6 +1773,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     }
     state.weights = w;
     if (state.profile) state.profile.weight = kg;          // nova težina menja i dnevnu potrošnju
+    setMeasure(t, { kg: kg });                             // i u punu istoriju merenja
   }
   function addWeight(kg) { recordWeight(kg); save(); render(); }
   // težina iz profila se računa kao merenje: prvo merenje ili promena težine u profilu
@@ -1784,8 +1799,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
     var l = lastWeight();
     $("weightIntro").textContent = prompted
       ? (l ? "Prošla je nedelja od poslednjeg merenja (" + dec(l.kg) + " kg, " + dateLabel(l.d).slice(0, -1) + "). Koliko imaš danas?" : "Upiši težinu jednom nedeljno, pa ćeš u profilu videti kako napreduješ.")
-      : "Upiši današnju težinu.";
+      : "Upiši današnju težinu i, ako želiš, obime.";
     $("wIn").value = l ? dec(l.kg) : state.profile ? dec(state.profile.weight) : "";
+    var last = lastMeasures();
+    $("obimiGrid").innerHTML = MEAS.filter(function (m) { return m.k !== "kg"; }).map(function (m) {
+      return '<div class="field"><label for="m_' + m.k + '">' + m.name + '</label><div class="inwrap unitin"><input id="m_' + m.k +
+        '" type="text" inputmode="decimal" autocomplete="off" placeholder="' + (last[m.k] != null ? dec(last[m.k]) : "") + '"><span class="u">' + m.unit + '</span></div></div>';
+    }).join("");
+    $("obimiBox").open = !prompted;
     $("wErr").textContent = "";
     $("wLater").hidden = !prompted;
     $("weightOverlay").hidden = false; document.body.style.overflow = "hidden";
@@ -1797,15 +1818,76 @@ form { display: flex; flex-direction: column; gap: 14px; }
   $("wLater").onclick = function () { snoozeWeight(); closeWeight(); };
   $("weightForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    var kg = parseFloat(String($("wIn").value).replace(",", "."));
-    if (!(kg >= 30 && kg <= 300)) { $("wErr").textContent = "Unesi težinu između 30 i 300 kg."; return; }
-    addWeight(Math.round(kg * 10) / 10);
+    var val = function (id) { var t = String($(id).value).trim().replace(",", "."); return t === "" ? null : parseFloat(t); };
+    var kg = val("wIn"), obimi = {}, err = "";
+    if (kg != null && !(kg >= 30 && kg <= 300)) err = "Unesi težinu između 30 i 300 kg.";
+    MEAS.forEach(function (m) {
+      if (m.k === "kg" || err) return;
+      var v = val("m_" + m.k);
+      if (v == null) return;
+      if (!(v >= m.min && v <= m.max)) err = m.name + ": unesi broj između " + m.min + " i " + m.max + " " + m.unit + ".";
+      else obimi[m.k] = Math.round(v * 10) / 10;
+    });
+    if (!err && kg == null && !Object.keys(obimi).length) err = "Upiši težinu ili bar jedan obim.";
+    if (err) { $("wErr").textContent = err; return; }
+    if (Object.keys(obimi).length) setMeasure(todayKey(), obimi);
+    if (kg != null) addWeight(Math.round(kg * 10) / 10);
     closeWeight();
     if (!$("overlay").hidden) { openSheet(); }
   });
 
+  // ---------- merenja: puna istorija (težina i obimi), čuva se zauvek ----------
+  // users/{uid}/merenja/{datum} = { kg, struk, kukovi, ... } — samo upisane vrednosti.
+  // Polje state.weights (stari sažetak težine) ostaje i održava se kao i pre.
+  var MEAS = [
+    { k: "kg", name: "Težina", unit: "kg", min: 30, max: 300 },
+    { k: "struk", name: "Struk", unit: "cm", min: 30, max: 250 },
+    { k: "kukovi", name: "Kukovi", unit: "cm", min: 30, max: 250 },
+    { k: "grudi", name: "Grudi", unit: "cm", min: 30, max: 250 },
+    { k: "nadlaktica", name: "Nadlaktica", unit: "cm", min: 10, max: 100 },
+    { k: "butina", name: "Butina", unit: "cm", min: 20, max: 150 },
+    { k: "vrat", name: "Vrat", unit: "cm", min: 15, max: 80 },
+    { k: "list", name: "List (noga)", unit: "cm", min: 15, max: 80 },
+    { k: "mast", name: "Telesna mast", unit: "%", min: 2, max: 70 }
+  ];
+  var measures = {}, measuresLoaded = false, measSel = "kg";
+  function setMeasure(d, fields) {
+    measures[d] = Object.assign({}, measures[d], fields);
+    KDB.saveMeasure(d, fields);
+  }
+  function series(k) {
+    return Object.keys(measures).sort().filter(function (d) { return measures[d][k] != null; }).map(function (d) { return { d: d, kg: measures[d][k] }; });
+  }
+  function lastMeasures() {
+    var out = {};
+    Object.keys(measures).sort().forEach(function (d) { Object.keys(measures[d]).forEach(function (k) { out[k] = measures[d][k]; }); });
+    return out;
+  }
+  // Prvi put: postojeća merenja težine iz state.weights se KOPIRAJU u punu istoriju (original ostaje).
+  function loadMeasuresOnce(uid) {
+    return KDB.loadMeasures().then(function (m) {
+      if (KDB.myId() !== uid) return;
+      measures = m || {};
+      var w = state.weights;
+      if (w) {
+        var old = [];
+        if (w.start) old.push(w.start);
+        Object.keys(w.months || {}).forEach(function (ym) { old.push({ d: ym + "-15", kg: w.months[ym][0] }); });
+        (w.entries || []).forEach(function (e) { old.push(e); });
+        old.forEach(function (e) {
+          if (!e || !e.d || !(e.kg > 0)) return;
+          if (measures[e.d] && measures[e.d].kg != null) return;   // već postoji: ne dirati
+          setMeasure(e.d, { kg: e.kg });
+        });
+      }
+      measuresLoaded = true;
+      if (!$("overlay").hidden) renderWeightSection();
+    }).catch(function () {});
+  }
   function weightPoints() {
-    var w = state.weights; if (!w) return [];
+    var full = series("kg");
+    if (full.length) return full;
+    var w = state.weights; if (!w) return [];                  // dok se istorija ne učita
     var pts = Object.keys(w.months || {}).map(function (ym) { return { d: ym + "-15", kg: w.months[ym][0], avg: true }; });
     return pts.concat(w.entries || []).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
   }
@@ -1815,7 +1897,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     var ks = pts.map(function (p) { return p.kg; }), lo = Math.floor(Math.min.apply(null, ks) - 1), hi = Math.ceil(Math.max.apply(null, ks) + 1);
     var X = function (p) { return pts.length === 1 ? (L + W - Rm) / 2 : L + (parseKey(p.d).getTime() - t0) / span * (W - L - Rm); };
     var Y = function (kg) { return T + (hi - kg) / (hi - lo) * (H - T - B); };
-    var svg = '<svg class="wchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Grafikon težine">';
+    var svg = '<svg class="wchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Grafikon merenja">';
     [lo, (lo + hi) / 2, hi].forEach(function (v) {
       svg += '<line class="grid" x1="' + L + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3) + '" text-anchor="end">' + dec(v) + '</text>';
     });
@@ -1833,19 +1915,30 @@ form { display: flex; flex-direction: column; gap: 14px; }
   function renderWeightSection() {
     var el = $("weightSection");
     if (!state.profile) { el.innerHTML = ""; return; }
-    var w = state.weights, l = lastWeight(), html = '<div class="wsec"><h3>Težina</h3>';
-    if (w && l) {
-      var diff = l.kg - w.start.kg, pts = weightPoints();
+    var have = MEAS.filter(function (m) { return m.k === "kg" ? weightPoints().length : series(m.k).length; });
+    if (!have.some(function (m) { return m.k === measSel; })) measSel = "kg";
+    var meta = MEAS.filter(function (m) { return m.k === measSel; })[0];
+    var pts = measSel === "kg" ? weightPoints() : series(measSel);
+    var html = '<div class="wsec"><h3>Merenja</h3>';
+    if (have.length > 1) html += '<div class="mchips">' + have.map(function (m) {
+      return '<button type="button" class="chip' + (m.k === measSel ? " on" : "") + '" data-meas="' + m.k + '">' + m.name + '</button>';
+    }).join("") + '</div>';
+    if (pts.length) {
+      var a = pts[0], b = pts[pts.length - 1], diff = b.kg - a.kg, u = meta.unit;
       html += '<div class="wstats">' +
-        '<div><small>Početak</small><b>' + dec(w.start.kg) + '</b> kg</div>' +
-        '<div><small>Sada</small><b>' + dec(l.kg) + '</b> kg</div>' +
-        '<div><small>Promena</small><b>' + (diff > 0 ? "+" : diff < 0 ? "−" : "") + dec(Math.abs(diff)) + '</b> kg</div></div>' +
+        '<div><small>Početak</small><b>' + dec(a.kg) + '</b> ' + u + '</div>' +
+        '<div><small>Sada</small><b>' + dec(b.kg) + '</b> ' + u + '</div>' +
+        '<div><small>Promena</small><b>' + (diff > 0 ? "+" : diff < 0 ? "−" : "") + dec(Math.abs(diff)) + '</b> ' + u + '</div></div>' +
         weightChart(pts) +
-        '<p class="src">Poslednje merenje: ' + dateLabel(l.d) + ' Starija merenja se čuvaju kao mesečni prosek.</p>';
+        '<p class="src">Poslednje: ' + dateLabel(b.d) + ' Sva merenja se čuvaju zauvek.</p>';
     } else {
       html += '<p class="src">Još nema merenja. Upiši težinu gore jednom nedeljno, pa ćeš ovde videti grafikon.</p>';
     }
-    el.innerHTML = html + '</div>';
+    el.innerHTML = html + '<button class="btn ghost" type="button" id="measAdd">Novo merenje (težina i obimi)</button></div>';
+    $("measAdd").onclick = function () { openWeight(false); };
+    Array.prototype.forEach.call(el.querySelectorAll("[data-meas]"), function (c) {
+      c.onclick = function () { measSel = c.getAttribute("data-meas"); renderWeightSection(); };
+    });
   }
 
   // ---------- automatsko osvežavanje nove verzije ----------
@@ -2033,6 +2126,11 @@ form { display: flex; flex-direction: column; gap: 14px; }
       var dw = lw.kg - w.start.kg;
       rows.push(["Težina", "početak " + dec(w.start.kg) + " kg (" + shortDate(w.start.d) + "), sada " + dec(lw.kg) + " kg (" + (dw > 0 ? "+" : dw < 0 ? "−" : "") + dec(Math.abs(dw)) + " kg)"]);
     }
+    var ob = MEAS.filter(function (m) { return m.k !== "kg" && series(m.k).length; }).map(function (m) {
+      var sr = series(m.k), dv = sr[sr.length - 1].kg - sr[0].kg;
+      return m.name.toLowerCase() + " " + dec(sr[sr.length - 1].kg) + " " + m.unit + (sr.length > 1 && dv ? " (" + (dv > 0 ? "+" : "−") + dec(Math.abs(dv)) + ")" : "");
+    });
+    for (var oi = 0; oi < ob.length; oi += 3) rows.push([oi ? "" : "Obimi", ob.slice(oi, oi + 3).join(" · ")]);
     var boxH = rows.length * 6.5 + 5;
     doc.setFillColor(244, 247, 243); doc.roundedRect(L, y, R - L, boxH, 2.5, 2.5, "F");
     rows.forEach(function (rw, i) {

@@ -13,7 +13,7 @@ To posebno znači:
 
 - **Format podataka je ugovor.** Ne menjati imena polja, oblik zapisa ni značenje vrednosti u
   `users/{uid}` (profile, recent, streak, best, weights, smoke), `users/{uid}/dani/{datum}`
-  (meals po obrocima, vezbanje), `namirnice`, `jela`, `ekipa`, kao ni ključeve u localStorage
+  (meals po obrocima, vezbanje), `users/{uid}/merenja/{datum}` (kg i obimi, samo upisane vrednosti, merge), `namirnice`, `jela`, `ekipa`, kao ni ključeve u localStorage
   (`kalorije.*`). Ako je promena neophodna: stari oblik mora i dalje da se čita (migracija pri
   učitavanju, kao kod "ostalo" → "uzine"), bez brisanja originala dok se ne proveri.
 - **Ne brisati i ne prepisivati** tuđe ili stare zapise. Postojeće automatsko brisanje: samo obroci

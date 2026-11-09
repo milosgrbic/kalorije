@@ -12,6 +12,7 @@
  *        menja i briše samo ono što je sam napravio (pravila su u firestore.rules),
  *      * lični podaci u users/{uid}: profil, niz dana, težina; obroci po danima u users/{uid}/dani
  *        (čuva se poslednjih 15 dana) — vidi ih samo vlasnik,
+ *      * users/{uid}/merenja/{datum}: težina i obimi tog dana — čuvaju se zauvek,
  *      * ekipa/{uid}: mali javni sažetak za ekran Ekipa (ime, % današnjeg cilja, niz dana, dani bez cigare).
  *
  * Standardna lista namirnica (foods.js) nije u bazi i niko je ne može obrisati iz aplikacije.
@@ -110,6 +111,17 @@
     KDB.logout = function () { KDB.user = null; setSession(null); emit("auth"); return Promise.resolve(); };
     KDB.loadPersonal = function () { return Promise.resolve(null); };
     KDB.deleteDays = function () {};
+    var measKey = function () { return "kalorije.merenja." + KDB.user.uid; };
+    KDB.loadMeasures = function () {
+      try { return Promise.resolve(JSON.parse(localStorage.getItem(measKey())) || {}); } catch (e) { return Promise.resolve({}); }
+    };
+    // dopuni (ne briše) vrednosti za taj dan
+    KDB.saveMeasure = function (d, fields) {
+      var all = {}; try { all = JSON.parse(localStorage.getItem(measKey())) || {}; } catch (e) {}
+      all[d] = Object.assign({}, all[d], fields);
+      try { localStorage.setItem(measKey(), JSON.stringify(all)); } catch (e) {}
+      return Promise.resolve();
+    };
     var TEAM_KEY = "kalorije.ekipa", teamCbs = [];
     var readTeam = function () { try { return JSON.parse(localStorage.getItem(TEAM_KEY)) || {}; } catch (e) { return {}; } };
     KDB.savePersonal = function (state, dayKeys, team) {
@@ -213,6 +225,21 @@
       return { profile: m.profile || null, recent: m.recent || [], recentDishes: m.recentDishes || [],
         streak: m.streak || null, best: m.best || 0, weights: m.weights || null, smoke: m.smoke || null, days: days };
     });
+  };
+  // Merenja (težina, obimi): users/{uid}/merenja/{YYYY-MM-DD}, čuvaju se zauvek
+  KDB.loadMeasures = function () {
+    if (!KDB.user) return Promise.resolve({});
+    return db.collection("users").doc(KDB.user.uid).collection("merenja").get().then(function (snap) {
+      var all = {};
+      snap.forEach(function (d) { all[d.id] = d.data(); });
+      return all;
+    });
+  };
+  // merge: dopunjuje vrednosti za taj dan, nikad ne briše postojeće
+  KDB.saveMeasure = function (d, fields) {
+    if (!KDB.user) return Promise.resolve();
+    return wrap(db.collection("users").doc(KDB.user.uid).collection("merenja").doc(d).set(fields, { merge: true }))
+      .catch(function (e) { KDB.error = e.message; emit("auth"); });
   };
   // stari dani (van 15 dana) se brišu iz baze
   KDB.deleteDays = function (keys) {

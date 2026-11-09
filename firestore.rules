@@ -5,7 +5,7 @@ rules_version = '2';
 // Ko šta sme:
 //  - namirnice, jela: svi prijavljeni čitaju i dodaju; menja i briše samo autor
 //  - ekipa/{uid}: svi prijavljeni čitaju (ime, % cilja, niz dana, dani bez cigare); piše samo vlasnik
-//  - users/{uid} i users/{uid}/dani: samo vlasnik
+//  - users/{uid}, users/{uid}/dani i users/{uid}/merenja: samo vlasnik
 // Pored toga, svaki upis mora da ima samo poznata polja, pravog tipa i razumne veličine,
 // da niko ne bi mogao da ubaci smeće ili ogromne zapise.
 service cloud.firestore {
@@ -23,6 +23,7 @@ service cloud.firestore {
     function num(v, max) { return v is number && v >= 0 && v <= max; }
     function day(v) { return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
     function stamp(d, k) { return !(k in d) || d[k] is timestamp; }
+    function optNum(d, k, max) { return !(k in d) || num(d[k], max); }
 
     function validFood() {
       let d = request.resource.data;
@@ -71,6 +72,18 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['name', 'updatedAt', 'profile', 'recent', 'recentDishes', 'streak', 'best', 'weights', 'smoke'])
         && (!('recent' in request.resource.data) || (request.resource.data.recent is list && request.resource.data.recent.size() <= 50))
         && (!('recentDishes' in request.resource.data) || (request.resource.data.recentDishes is list && request.resource.data.recentDishes.size() <= 50));
+
+      // Merenja (težina i obimi) — čuvaju se zauvek
+      match /merenja/{d} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && day(d)
+          && request.resource.data.keys().hasOnly(['kg', 'struk', 'kukovi', 'grudi', 'nadlaktica', 'butina', 'vrat', 'list', 'mast'])
+          && optNum(request.resource.data, 'kg', 400) && optNum(request.resource.data, 'struk', 300)
+          && optNum(request.resource.data, 'kukovi', 300) && optNum(request.resource.data, 'grudi', 300)
+          && optNum(request.resource.data, 'nadlaktica', 300) && optNum(request.resource.data, 'butina', 300)
+          && optNum(request.resource.data, 'vrat', 300) && optNum(request.resource.data, 'list', 300)
+          && optNum(request.resource.data, 'mast', 100);
+      }
 
       // Obroci po danima i kalorije potrošene vežbanjem (aplikacija čuva poslednjih 15 dana)
       match /dani/{d} {
