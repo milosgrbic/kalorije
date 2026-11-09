@@ -11,7 +11,6 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Kalorije</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
@@ -97,7 +96,6 @@ main {
 }
 .wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 
-
 .daybar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .daybar button {
   width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
@@ -108,7 +106,6 @@ main {
 .daylabel b { display: block; font-family: var(--display); font-size: 1.1rem; font-weight: 700; }
 .daylabel small { color: var(--muted); font-size: 0.82rem; }
 .daybar .daylabel { width: auto; height: auto; border-radius: 10px; background: none; border: 0; padding: 2px 8px; color: inherit; display: block; }
-.daylabel small b { display: inline; font: inherit; }
 
 /* gauge */
 .gauge-card { background: var(--surface); border-radius: 22px; padding: 18px 16px 16px; border: 1px solid var(--line); }
@@ -153,13 +150,13 @@ main {
 .meal.open .chev { transform: rotate(180deg); }
 .meal-body { padding: 0 16px 14px; border-top: 1px solid var(--line); }
 .items { list-style: none; margin: 0; padding: 0; }
-.items li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+.items li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--line); cursor: pointer; }
 .items li .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .items li .kc { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
 .del { border: 0; background: none; color: var(--muted); width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
 .del:hover { color: var(--over); background: var(--bg); }
 .empty { color: var(--muted); font-size: 0.88rem; padding: 12px 0 4px; }
-.add { display: grid; grid-template-columns: 1fr 96px auto; gap: 8px; margin-top: 12px; }
+.add { display: grid; grid-template-columns: 1fr 96px auto; gap: 8px; margin-top: 6px; }
 .add input { min-width: 0; }
 input, select {
   width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
@@ -237,19 +234,16 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
 /* daily macros */
 .macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-.mac { font-size: 0.82rem; color: var(--muted); }
+.mac { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 6px; justify-content: center; white-space: nowrap; }
 .mac b { color: var(--ink); font-variant-numeric: tabular-nums; }
-.mac { display: flex; align-items: center; gap: 6px; justify-content: center; white-space: nowrap; }
 .mac i, .mbox i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .p i { background: var(--c-p); } .c i { background: var(--c-c); } .f i { background: var(--c-f); }
 
 /* meal items + actions */
-.items li { cursor: pointer; }
 .items li .nm small { display: block; color: var(--muted); font-size: 0.8rem; }
 .meal-actions { display: flex; gap: 8px; margin-top: 12px; }
 .meal-actions .btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; }
 .manual-lbl { font-size: 0.78rem; color: var(--muted); margin: 14px 0 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-.add { margin-top: 6px; }
 
 /* food sheet */
 .food-sheet { height: 88vh; max-height: 88vh; display: flex; flex-direction: column; padding-bottom: 0; }
@@ -257,7 +251,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .food-sheet .sheet-head { flex: none; }
 .food-sheet .sheet-head h2 { flex: 1; min-width: 0; font-size: 1.25rem; }
 .back { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--bg); display: grid; place-items: center; flex: none; }
-#foodBody { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+#foodBody { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
 .search { position: relative; margin-bottom: 8px; }
 .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
 .search input { padding-left: 40px; }
@@ -299,24 +293,16 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .big span { color: var(--muted); }
 .mgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .mbox { background: var(--bg); border-radius: 12px; padding: 10px 12px; }
-.mbox small { display: block; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.mbox small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .mbox b { font-family: var(--display); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
-.mbox small { display: flex !important; align-items: center; gap: 6px; }
-/* grupe jela */
+/* Dobra opcija */
 .k-dobra { --kc: #2f8a4f; }
 .panel.good { --tint: var(--kc); }
 .panel.good .ctag { display: none; }
 .good-note { margin: 4px 2px 0; }
+.cat .ctag { margin-left: 0; font-size: 0.78rem; }
 .ctag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; vertical-align: 2px; white-space: nowrap;
   color: var(--kc); background: color-mix(in srgb, var(--kc) 14%, transparent); }
-.cat .ctag { margin-left: 0; font-size: 0.78rem; }
-.dcat-h { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 2px; padding-bottom: 6px; border-bottom: 2px solid var(--kc);
-  font-family: var(--display); font-weight: 700; font-size: 1.05rem; color: var(--ink); }
-.dcat-h .cdot { width: 10px; height: 10px; border-radius: 50%; background: var(--kc); align-self: center; flex: none; }
-.dcat-h small { margin-left: auto; font-family: var(--body); font-weight: 500; font-size: 0.78rem; color: var(--muted); text-align: right; }
-.dcat-list .ctag { display: none; }
-.chip.k-dobra.on { background: var(--kc); border-color: var(--kc); color: #fff; }
-.chip.k-dobra { border-color: color-mix(in srgb, var(--kc) 45%, transparent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .k-dobra { --kc: #5cc27e; } }
 :root[data-theme="dark"] .k-dobra { --kc: #5cc27e; }
 .split { display: flex; flex-direction: column; gap: 6px; margin-top: -4px; }
@@ -332,7 +318,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .addrow { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
 .btn.danger { background: var(--bg); color: var(--over); border: 1px solid var(--line); }
 .src { color: var(--muted); font-size: 0.78rem; }
-#foodBody { overflow-x: hidden; }
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--bg); border-radius: 12px; margin-bottom: 10px; }
 .tabs button { border: 0; background: none; padding: 9px; border-radius: 9px; font-weight: 700; color: var(--muted); }
 .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
@@ -355,7 +340,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .btotal b { font-family: var(--display); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 .btotal small { grid-column: 1 / -1; color: var(--muted); font-variant-numeric: tabular-nums; }
 #foodList > .newdish:first-child { margin-top: 6px; }
-.chip.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
 .tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; vertical-align: 2px;
   background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tag.mine { background: color-mix(in srgb, var(--ok) 22%, transparent); }
@@ -371,7 +355,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .acct b { color: var(--ink); display: block; }
 .acct.in { flex-direction: row; align-items: center; }
 .acct.in span { flex: 1; min-width: 0; }
-.acct img { width: 40px; height: 40px; border-radius: 50%; flex: none; }
 .acct + .err { margin: -8px 0 12px; }
 .login { position: fixed; inset: 0; z-index: 40; background: var(--brand); display: grid; place-items: center; overflow-y: auto;
   padding: max(24px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
@@ -381,9 +364,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .login-logo { font-family: var(--display); font-weight: 800; font-size: 2.2rem; letter-spacing: -0.02em; line-height: 1; color: var(--ink); }
 .login-logo span { color: var(--accent); }
 .ava { width: 40px; height: 40px; border-radius: 50%; flex: none !important; display: grid; place-items: center; background: var(--brand); color: var(--brand-ink) !important; font-family: var(--display); font-weight: 700; font-size: 1.1rem; }
-.logincard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; font-size: 0.9rem; color: var(--muted); }
-.logincard span { flex: 1; min-width: 0; }
-.logincard b { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -538,14 +518,16 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function userKey() { return KEY_BASE + "." + KDB.user.id; }
   function loadLocal() {
     try { var x = JSON.parse(localStorage.getItem(userKey())); if (x && x.days) return fill(x); } catch (e) {}
-    // podaci uneti pre uvođenja prijave pripadaju prvom ko se prijavi na ovom uređaju
-    try { var o = JSON.parse(localStorage.getItem(KEY_BASE)); if (o && o.days) { localStorage.removeItem(KEY_BASE); return fill(o); } } catch (e) {}
     return emptyState();
   }
+  // Dok se lični podaci ne učitaju iz baze, izmene se pamte lokalno i šalju tek posle,
+  // spojene sa onim iz baze (inače bi prazan profil sa novog telefona prepisao pravi).
+  var personalReady = false, dirtyDays = {}, metaDirty = false;
   function save() {
     if (!KDB.user) return;
     try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
-    KDB.savePersonal(state, [day]);
+    if (personalReady) KDB.savePersonal(state, [day]);
+    else { dirtyDays[day] = true; metaDirty = true; }
   }
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -607,8 +589,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var gp1 = pt(goalFrac, R + 13), gp2 = pt(goalFrac, R - 13);
     ticks += '<line x1="' + gp1[0] + '" y1="' + gp1[1] + '" x2="' + gp2[0] + '" y2="' + gp2[1] + '" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>';
     $("gTicks").innerHTML = ticks;
-    var fill = $("gFill");
-    fill.setAttribute("stroke", color);
+    var arcEl = $("gFill");
+    arcEl.setAttribute("stroke", color);
     var start = shownFrac, end = frac, t0 = null;
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function step(ts) {
@@ -616,7 +598,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       var k = reduce ? 1 : Math.min((ts - t0) / 600, 1);
       var e = 1 - Math.pow(1 - k, 3);
       var f = start + (end - start) * e;
-      if (f > 0.002) { fill.setAttribute("d", arc(0, f, R)); fill.style.display = ""; } else fill.style.display = "none";
+      if (f > 0.002) { arcEl.setAttribute("d", arc(0, f, R)); arcEl.style.display = ""; } else arcEl.style.display = "none";
       shownFrac = f;
       if (k < 1) requestAnimationFrame(step);
     }
@@ -791,9 +773,6 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   var STD_FOODS = (window.FOODS || []).map(function (f) { return Object.assign({ std: true }, f); });
   var STD_DISHES = (window.JELA || []).map(function (d) { return Object.assign({ std: true }, d); });
   var FOOD_BY_ID = {}, DISH_BY_ID = {};
-  delete state.dishes; delete state.hiddenDishes;
-  if (!state.recent) state.recent = [];
-  if (!state.recentDishes) state.recentDishes = [];
 
   function comFoods() { return (KDB.foods || []).slice().sort(byName); }
   function comDishes() { return (KDB.dishes || []).slice().sort(byName); }
@@ -815,7 +794,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
   function norm(s) {
     return String(s).toLowerCase().replace(/đ/g, "dj").replace(/[čć]/g, "c").replace(/š/g, "s").replace(/ž/g, "z")
-      .normalize("NFD").replace(/[̀-ͯ]/g, "");
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
   function macrosFor(f, qty) {
     var k = qty / 100;
@@ -833,7 +812,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   var fs = { view: null };
   function openFoods(mode, opts) {
     opts = opts || {};
-    fs = { mode: mode, meal: opts.meal || null, index: opts.index == null ? null : opts.index, view: "list", tab: "foods", src: "all", query: "" };
+    fs = { mode: mode, meal: opts.meal || null, index: opts.index == null ? null : opts.index, view: "list", tab: "foods", query: "" };
     if (mode === "edit") {
       var it = (state.days[day] || {})[fs.meal][fs.index];
       var dsh = it.dish && dishById(it.dish);
@@ -892,12 +871,10 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       ' · P ' + dec(f.p) + ' · UH ' + dec(f.c) + ' · M ' + dec(f.f) + '</small></span>' +
       '<span class="fk">' + fmt(f.kcal) + ' <small>kcal</small></span></button></li>';
   }
-  // grupe standardnih jela
-  var DCATS = [
-    { cat: "Dobra opcija", key: "dobra", desc: "zdravo, jednostavno i izbalansirano" }
-  ];
-  function dcatOf(d) { for (var i = 0; i < DCATS.length; i++) if (DCATS[i].cat === d.cat) return DCATS[i]; return null; }
-  function ctag(d) { var c = d.std && dcatOf(d); return c ? '<span class="ctag k-' + c.key + '">' + esc(c.cat) + '</span>' : ""; }
+  // standardna jela sa cat: "Dobra opcija" izdvojena su na vrhu liste jela
+  var GOOD = "Dobra opcija";
+  function isGood(d) { return !!d.std && d.cat === GOOD; }
+  function ctag(d) { return isGood(d) ? '<span class="ctag k-dobra">' + GOOD + '</span>' : ""; }
   function dishRow(d) {
     var t = dishTotals(d);
     return '<li><button data-dish="' + esc(d.id) + '"><span class="fn"><b>' + esc(d.name) + tag(d) + ctag(d) + '</b><small>' + t.n + (t.n === 1 ? " namirnica" : " namirnice") +
@@ -941,46 +918,41 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     for (var i = 0; i < b.length; i++) b[i].setAttribute("aria-selected", b[i].getAttribute("data-tab") === fs.tab);
     var foods = fs.tab === "foods";
     $("foodSearch").placeholder = foods ? "Pretraži, npr. jaje, piletina, hleb" : "Pretraži jela";
-    var onlyCat = null, showStd = true, showCom = true;
     var fn = foods ? row : dishRow;
-    var std = foods ? STD_FOODS : STD_DISHES.filter(function (d) { return !onlyCat || (dcatOf(d) || {}).key === onlyCat; });
+    var std = foods ? STD_FOODS : STD_DISHES;
     var com = foods ? comFoods() : comDishes();
     var recentIds = foods ? state.recent : state.recentDishes;
     var lookup = foods ? function (id) { return FOOD_BY_ID[id]; } : dishById;
-    var ok = function (x) { return x && (x.std ? showStd && std.indexOf(x) !== -1 : showCom); };
 
     html += addButton(foods ? "food" : "dish");
     if (q) {
       var m = matches(q);
-      var hits = (showStd ? std : []).concat(showCom ? com : []).filter(function (x) { return m(x.name + " " + (x.cat || "")); });
+      var hits = std.concat(com).filter(function (x) { return m(x.name + " " + (x.cat || "")); });
       hits = sortBy(hits, ranker(q, recentIds));
       html += hits.length ? ul(hits, fn) : '<p class="noresult">Nema ' + (foods ? "namirnice" : "jela") + ' „' + esc(fs.query) + '“. ' + (foods ? "Dodaj je" : "Napravi ga") + ' dugmetom iznad.</p>';
     } else {
-      var recent = recentIds.map(lookup).filter(ok).slice(0, 8);
-      var mine = showCom ? com.filter(isMine) : [];
-      var others = showCom ? com.filter(function (x) { return !isMine(x); }) : [];
+      var recent = recentIds.map(lookup).filter(Boolean).slice(0, 8);
+      var mine = com.filter(isMine);
+      var others = com.filter(function (x) { return !isMine(x); });
       if (recent.length) html += panel("recent", ICON_CLOCK, "Nedavno dodato", recent, fn);
       if (mine.length) html += panel("mine", ICON_USER, foods ? "Moje namirnice" : "Moja jela", mine, fn);
-      var good = !foods && showStd ? std.filter(function (d) { return d.cat === "Dobra opcija"; }) : [];
-      if (good.length) html += panel("good k-dobra", ICON_LEAF, "Dobra opcija", good, dishRow) +
+      var good = foods ? [] : std.filter(isGood);
+      if (good.length) html += panel("good k-dobra", ICON_LEAF, GOOD, good, dishRow) +
         '<p class="src good-note">Zdrava i izbalansirana jela koja se lako naprave kod kuće.</p>';
-      if (showCom && (others.length || !mine.length)) {
+      if (others.length || !mine.length) {
         html += '<div class="group-h">Od drugih korisnika</div>' +
           (others.length ? ul(others, fn) : '<p class="noresult">Još niko nije dodao ' + (foods ? "namirnicu" : "jelo") + '.</p>');
       }
-      if (showStd) {
-        if (foods) {
-          CATS.forEach(function (c) {
-            var inCat = STD_FOODS.filter(function (f) { return f.cat === c; });
-            if (inCat.length) html += '<div class="group-h">' + esc(c) + '</div>' + ul(inCat, row);
-          });
-          html += '<p class="src">Standardna lista: približne vrednosti na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
-        } else {
-          var rest = std.filter(function (d) { return !d.cat; });
-          if (rest.length) html += '<div class="group-h">Sva jela</div>' + ul(rest, dishRow);
-        }
+      if (foods) {
+        CATS.forEach(function (c) {
+          var inCat = STD_FOODS.filter(function (f) { return f.cat === c; });
+          if (inCat.length) html += '<div class="group-h">' + esc(c) + '</div>' + ul(inCat, row);
+        });
+        html += '<p class="src">Standardna lista: približne vrednosti na 100 g ili 100 ml (USDA FoodData Central i deklaracije).</p>';
+      } else {
+        html += '<div class="group-h">Sva jela</div>' + ul(std.filter(function (d) { return !isGood(d); }), dishRow) +
+          '<p class="src">Kalorije su za 1 porciju. Jelo je zbir namirnica, pa se računa samo.</p>';
       }
-      if (!foods) html += '<p class="src">Kalorije su za 1 porciju. Jelo je zbir namirnica, pa se računa samo.</p>';
     }
     $("foodList").innerHTML = html;
   }
@@ -1081,7 +1053,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       };
       if (isMine(f)) {
         $("editFood").onclick = function () {
-          fs.fdraft = { id: f.id, name: f.name, cat: f.cat, unit: f.unit, kcal: f.kcal, p: f.p, f: f.f, c: f.c, portion: f.portion, note: f.note, back: true };
+          fs.fdraft = { id: f.id, name: f.name, cat: f.cat, unit: f.unit, kcal: f.kcal, p: f.p, f: f.f, c: f.c, portion: f.portion, back: true };
           fs.view = "foodform"; renderFoods();
         };
         if (usedBy) {
@@ -1173,7 +1145,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }
     $("foodBody").innerHTML =
       '<div class="detail">' +
-        '<div class="cat">' + (d.std && dcatOf(d) ? ctag(d) + " " : esc(author(d)) + " · ") + '1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
+        '<div class="cat">' + (isGood(d) ? ctag(d) + " " : esc(author(d)) + " · ") + '1 porcija = ' + fmt(tot.kcal) + ' kcal</div>' +
         splitBar(tot) +
         '<div class="field"><label for="portIn">Broj porcija</label>' +
           '<div class="qty"><div class="inwrap"><input id="portIn" type="text" inputmode="decimal" autocomplete="off" value="' + dec(fs.portions) + '"><span class="u">porc.</span></div></div></div>' +
@@ -1340,6 +1312,11 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     }).then(function () { $("loginBtn").disabled = false; $("loginBtn").textContent = "Uđi"; });
   });
 
+  function mergeIds(a, b, max) {
+    var out = [];
+    (a || []).concat(b || []).forEach(function (id) { if (out.indexOf(id) === -1) out.push(id); });
+    return out.slice(0, max);
+  }
   var lastUid = null;
   KDB.onChange(function (what) {
     if (what === "auth") {
@@ -1347,17 +1324,33 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       if (uid && uid !== lastUid) {
         lastUid = uid;
         state = loadLocal(); day = todayKey(); openMeals = {};
+        personalReady = false; dirtyDays = {}; metaDirty = false;
         render();
         KDB.loadPersonal().then(function (cloud) {
           if (KDB.myId() !== uid) return;
-          if (cloud) state = fill(cloud);
-          else if (KDB.cloud) KDB.savePersonal(state, Object.keys(state.days)); // prvi put: prebaci uneto na ovom uređaju
+          var local = state, push;
+          if (cloud) {
+            state = fill(cloud);
+            // ono što je izmenjeno pre nego što je baza odgovorila ima prednost
+            Object.keys(dirtyDays).forEach(function (k) { state.days[k] = local.days[k] || {}; });
+            if (metaDirty) {
+              state.profile = local.profile || state.profile;
+              state.recent = mergeIds(local.recent, state.recent, 12);
+              state.recentDishes = mergeIds(local.recentDishes, state.recentDishes, 8);
+            }
+            push = Object.keys(dirtyDays);
+          } else {
+            push = Object.keys(state.days); // prvi put na ovom nalogu: prebaci sve uneto na ovom uređaju
+          }
+          personalReady = true;
+          if (KDB.cloud && (push.length || metaDirty || !cloud)) KDB.savePersonal(state, push);
+          dirtyDays = {}; metaDirty = false;
           try { localStorage.setItem(userKey(), JSON.stringify(state)); } catch (e) {}
           render();
         }).catch(function (e) { KDB.error = e.message; renderAccount(); });
       }
       if (!uid && lastUid) {
-        lastUid = null; state = emptyState(); openMeals = {};
+        lastUid = null; state = emptyState(); openMeals = {}; personalReady = false;
         closeSheet(); closeFoods(); render();
       }
       renderAccount();

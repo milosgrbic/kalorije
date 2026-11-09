@@ -7,7 +7,7 @@
  *  - LOKALNI (dok firebase-config.js nije popunjen): sve se čuva u ovom browseru,
  *    odvojeno za svakog korisnika.
  *  - OBLAK (Firebase): svaki korisnik ima nalog <id>@kalorije.app sa lozinkom
- *    izvedenom iz username-a (pravi ga admin, vidi FIREBASE.md).
+ *    izvedenom iz username-a (pravi ga Claude ili admin, vidi FIREBASE.md).
  *      * zajednička baza namirnica i jela (kolekcije "namirnice" i "jela"): svi vide, svako dodaje,
  *        menja i briše samo ono što je sam napravio (pravila su u firestore.rules),
  *      * lični podaci (profil + obroci po danima) u users/{uid}, vidi ih samo vlasnik.
@@ -59,7 +59,21 @@
 
   // Firestore ne podržava ugnježdene nizove: [["jaje",110]] <-> [{id:"jaje",qty:110}]
   function dishToDb(d) { return d.items.map(function (x) { return { id: x[0], qty: x[1] }; }); }
-  function dishFromDb(items) { return (items || []).map(function (x) { return [x.id, x.qty]; }); }
+
+  // Podatke koje su uneli drugi korisnici pre prikaza svodimo na poznata polja i tipove,
+  // da niko ne može da ubaci HTML ili čudne vrednosti u tuđu aplikaciju.
+  function str(v, max) { return String(v == null ? "" : v).slice(0, max || 120); }
+  function nr(v) { var n = Number(v); return isFinite(n) && n >= 0 ? n : 0; }
+  function cleanFood(id, x) {
+    return { id: id, name: str(x.name) || "Bez naziva", cat: str(x.cat, 60) || "Ostalo", unit: x.unit === "ml" ? "ml" : "g",
+      kcal: nr(x.kcal), p: nr(x.p), f: nr(x.f), c: nr(x.c), portion: nr(x.portion) || 100,
+      createdBy: str(x.createdBy, 128), createdByName: str(x.createdByName, 40) };
+  }
+  function cleanDish(id, x) {
+    var items = Array.isArray(x.items) ? x.items : [];
+    return { id: id, name: str(x.name) || "Bez naziva", createdBy: str(x.createdBy, 128), createdByName: str(x.createdByName, 40),
+      items: items.slice(0, 60).map(function (i) { return Array.isArray(i) ? [str(i[0], 128), nr(i[1])] : [str(i && i.id, 128), nr(i && i.qty)]; }) };
+  }
   function clean(o) { var r = {}; Object.keys(o).forEach(function (k) { if (o[k] !== undefined && k !== "id") r[k] = o[k]; }); return r; }
 
   // ---------------- LOKALNI režim ----------------
@@ -78,7 +92,7 @@
       persist();
       return Promise.resolve(obj.id);
     };
-    KDB.foods = loc.foods; KDB.dishes = loc.dishes;
+    KDB.foods = loc.foods; KDB.dishes = loc.dishes;   // lokalno: samo ovaj uređaj, ne treba čišćenje
     KDB.saveFood = function (f) { return upsert(loc.foods, f, "cf"); };
     KDB.saveDish = function (d) { return upsert(loc.dishes, d, "cd"); };
     KDB.deleteFood = function (id) { loc.foods = loc.foods.filter(function (x) { return x.id !== id; }); persist(); return Promise.resolve(); };
@@ -125,22 +139,24 @@
         emit("auth");
         if (!u) { emit("community"); return; }
         unsub.push(db.collection("namirnice").onSnapshot(function (snap) {
-          KDB.foods = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-          emit("community");
+          KDB.foods = snap.docs.map(function (d) { return cleanFood(d.id, d.data()); });
+          okAgain(); emit("community");
         }, function (e) { KDB.error = poruka(e); emit("auth"); }));
         unsub.push(db.collection("jela").onSnapshot(function (snap) {
-          KDB.dishes = snap.docs.map(function (d) { var x = d.data(); return Object.assign({ id: d.id }, x, { items: dishFromDb(x.items) }); });
-          emit("community");
+          KDB.dishes = snap.docs.map(function (d) { return cleanDish(d.id, d.data()); });
+          okAgain(); emit("community");
         }, function (e) { KDB.error = poruka(e); emit("auth"); }));
       });
     })
     .catch(function (e) { KDB.error = poruka(e); KDB.ready = true; emit("auth"); });
 
+  // ranija greška (npr. bez interneta) se briše čim baza ponovo odgovori
+  function okAgain() { if (KDB.error) { KDB.error = ""; emit("auth"); } }
   function poruka(e) {
     var c = e && e.code || "";
     if (c === "permission-denied") return "Baza je odbila pristup. Proveri pravila (firestore.rules).";
     if (c === "auth/invalid-credential" || c === "auth/user-not-found" || c === "auth/wrong-password" || c === "auth/invalid-login-credentials")
-      return "Korisničko ime je tačno, ali nalog još nije napravljen u bazi. Javi adminu.";
+      return "Korisničko ime je tačno, ali nalog još nije napravljen u bazi. Javi Milošu.";
     if (c === "auth/network-request-failed") return "Nema interneta. Pokušaj ponovo.";
     if (c === "auth/too-many-requests") return "Previše pokušaja. Sačekaj par minuta.";
     return (e && e.message) || String(e);

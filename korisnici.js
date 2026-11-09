@@ -9,7 +9,7 @@
  *   name  ime koje se vidi u aplikaciji
  *   hash  otisak username-a
  *
- * Novog korisnika dodaje Claude (izračuna otisak), a nalog u bazi pravi admin (uputstvo u FIREBASE.md).
+ * Novog korisnika dodaje Claude: izračuna otisak, doda red ovde i napravi nalog u bazi (FIREBASE.md).
  */
 window.KORISNICI = [
   { id: "milos", name: "Miloš", hash: "680a10ace9077f1bddcb71ef4135f360169ea1d56ad1a1f00cbb59e92a149730" },
