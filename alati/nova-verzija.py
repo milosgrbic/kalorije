@@ -23,7 +23,7 @@ new = f"{today}-{n}"
 html = index.read_text()
 html, a = re.subn(r'var APP_VERSION = "[^"]*";', f'var APP_VERSION = "{new}";', html)
 html, b = re.subn(r'(<script src="[^"/]+\.js)\?v=[^"]*(")', rf'\1?v={new}\2', html)
-assert a == 1 and b >= 5, "index.html nema očekivana mesta za verziju"
+assert a == 1 and b >= 4, "index.html nema očekivana mesta za verziju"
 index.write_text(html)
 vfile.write_text(json.dumps({"v": new}) + "\n")
 print(f"verzija: {old or '-'} -> {new}")

@@ -20,15 +20,14 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Niz dana** (vatrica pored imena): broj uzastopnih dana sa bar jednim unetim obrokom.
 - **Težina**: jednom nedeljno aplikacija ponudi merenje; u profilu je grafikon napretka.
 - **Izvezi**: dugme na dnu pravi PDF dana koji je otvoren i otvara meni za deljenje (Viber, WhatsApp, mejl…).
-- **Namirnice i jela**: pretraga, makroi, nedavno izabrano. Jelo je skup namirnica i sabira se po porcijama. Na vrhu je „Dobra opcija“: zdrava, jednostavna i izbalansirana jela za kuću.
-- **Dve vrste liste**: standardna (`foods.js`, `jela.js`, niko je ne briše) i od korisnika (zajednička baza, autor briše svoje).
+- **Namirnice i jela**: pretraga, makroi, nedavno izabrano. Jelo je skup namirnica i sabira se po porcijama.
+- **Namirnice**: standardna lista (`foods.js`, niko je ne briše) i one koje dodamo mi. **Jela** pravimo sami (skup namirnica sa količinama); vidimo ih oboje, briše ih onaj ko ih je napravio. Pamte se 3 poslednje izabrane namirnice i 3 jela.
 
 ## Fajlovi
 | Fajl | Šta je |
 |---|---|
 | `index.html` | cela aplikacija |
 | `foods.js` | standardna lista namirnica (na 100 g / 100 ml) |
-| `jela.js` | standardna lista jela |
 | `korisnici.js` | spisak korisnika (otisci korisničkih imena, ne sama imena) |
 | `db.js` | prijava i čuvanje podataka: lokalno ili Firebase |
 | `firebase-config.js` | podešavanja baze (prazno = lokalni režim) |

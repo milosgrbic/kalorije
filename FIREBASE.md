@@ -8,7 +8,7 @@ Kad se poveže Firebase, dobija se:
 - **zajednička baza namirnica i jela**: svi vide sve, svako dodaje, a menja i briše samo ono što je sam napravio,
 - **lični obroci i profil** se čuvaju na nalogu: vidi ih samo vlasnik i isti su na telefonu i računaru.
 
-Standardna lista (`foods.js`, `jela.js`) nije u bazi i niko je ne može obrisati iz aplikacije.
+Standardna lista namirnica (`foods.js`) nije u bazi i niko je ne može obrisati iz aplikacije.
 
 Besplatni paket (Spark) je dovoljan: 50.000 čitanja i 20.000 upisa dnevno.
 
@@ -68,7 +68,7 @@ namirnice i jela u zajedničku listu. Tuđe profile i obroke ni tada ne može da
 
 | Gde | Šta | Ko vidi / menja | Koliko dugo |
 |---|---|---|---|
-| `foods.js`, `jela.js` | standardna lista | svi vide, menja se samo u repozitorijumu | zauvek |
+| `foods.js` | standardna lista namirnica | svi vide, menja se samo u repozitorijumu | zauvek |
 | `korisnici.js` | spisak korisnika (otisci imena) | menja se samo u repozitorijumu | zauvek |
 | `namirnice/{id}` | namirnice koje su dodali korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |
 | `jela/{id}` | jela koja su napravili korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |

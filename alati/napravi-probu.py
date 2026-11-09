@@ -30,7 +30,7 @@ css='''
 '''
 head=head.replace('</style>',css+'</style>')
 (P/'bolja-ja-proba.html').write_text(head.strip()+'\n'+body)
-for f in ['korisnici.js','db.js','foods.js','jela.js','version.json']: shutil.copy(R/f,P/f)
+for f in ['korisnici.js','db.js','foods.js','version.json']: shutil.copy(R/f,P/f)
 shutil.copy(R/'alati'/'proba-demo.js',P/'demo.js')
 (P/'lib').mkdir(exist_ok=True)
 for f in ['jspdf.umd.min.js','pdf-font.js']: shutil.copy(R/'lib'/f,P/'lib'/f)

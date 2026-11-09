@@ -14,7 +14,8 @@
  *        (čuva se poslednjih 15 dana) — vidi ih samo vlasnik,
  *      * ekipa/{uid}: mali javni sažetak za ekran Ekipa (ime, % današnjeg cilja, niz dana, dani bez cigare).
  *
- * Standardna lista (foods.js, jela.js) nije u bazi i niko je ne može obrisati iz aplikacije.
+ * Standardna lista namirnica (foods.js) nije u bazi i niko je ne može obrisati iz aplikacije.
+ * Jela postoje samo ona koja napravimo mi (kolekcija "jela").
  */
 (function () {
   "use strict";
