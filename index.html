@@ -632,15 +632,15 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-5"></script>
-<script src="korisnici.js?v=2026.11.09-5"></script>
-<script src="db.js?v=2026.11.09-5"></script>
-<script src="foods.js?v=2026.11.09-5"></script>
-<script src="jela.js?v=2026.11.09-5"></script>
+<script src="firebase-config.js?v=2026.11.09-6"></script>
+<script src="korisnici.js?v=2026.11.09-6"></script>
+<script src="db.js?v=2026.11.09-6"></script>
+<script src="foods.js?v=2026.11.09-6"></script>
+<script src="jela.js?v=2026.11.09-6"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-5";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-6";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -1639,7 +1639,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         (m.active ? '<span class="tm-streak">' + FLAME + m.active + '<small>' + (m.active === 1 ? "dan" : "dana") + '</small></span>'
                   : '<span class="tm-streak off">0<small>dana</small></span>') + '</li>';
     });
-    html += '</ul><p class="src" style="margin-top:12px">Vidi se samo procenat današnjeg cilja, niz dana zaredom sa unetim obrocima i dani bez cigare, ne i šta je ko jeo.</p>';
+    html += '</ul>';
     $("teamBody").innerHTML = html;
   }
   KDB.onChange(function (what) { if (what === "team" && teamUnsub) renderTeam(); });
