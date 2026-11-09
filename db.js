@@ -12,7 +12,7 @@
  *        menja i briše samo ono što je sam napravio (pravila su u firestore.rules),
  *      * lični podaci u users/{uid}: profil, niz dana, težina; obroci po danima u users/{uid}/dani
  *        (čuva se poslednjih 15 dana) — vidi ih samo vlasnik,
- *      * ekipa/{uid}: mali javni sažetak za ekran Ekipa (ime, % današnjeg cilja, niz dana).
+ *      * ekipa/{uid}: mali javni sažetak za ekran Ekipa (ime, % današnjeg cilja, niz dana, dani bez cigare).
  *
  * Standardna lista (foods.js, jela.js) nije u bazi i niko je ne može obrisati iz aplikacije.
  */
@@ -210,7 +210,7 @@
       var m = r[0].data(), days = {};
       r[1].forEach(function (d) { days[d.id] = d.data().meals || {}; });
       return { profile: m.profile || null, recent: m.recent || [], recentDishes: m.recentDishes || [],
-        streak: m.streak || null, best: m.best || 0, weights: m.weights || null, days: days };
+        streak: m.streak || null, best: m.best || 0, weights: m.weights || null, smoke: m.smoke || null, days: days };
     });
   };
   // stari dani (van 15 dana) se brišu iz baze
@@ -224,7 +224,7 @@
   KDB.savePersonal = function (state, dayKeys, team) {
     if (!KDB.user) return;
     pending.meta = { profile: state.profile || null, recent: state.recent || [], recentDishes: state.recentDishes || [],
-      streak: state.streak || null, best: state.best || 0, weights: state.weights || null };
+      streak: state.streak || null, best: state.best || 0, weights: state.weights || null, smoke: state.smoke || null };
     (dayKeys || []).forEach(function (k) { pending[k] = state.days[k] || {}; });
     if (team) pendingTeam = team;
     clearTimeout(timer);
@@ -252,7 +252,7 @@
     return db.collection("ekipa").onSnapshot(function (snap) {
       cb(snap.docs.map(function (d) {
         var x = d.data();
-        return { uid: d.id, name: str(x.name, 40) || "Korisnik", day: str(x.day, 10), pct: nr(x.pct), streak: nr(x.streak), last: str(x.last, 10), best: nr(x.best) };
+        return { uid: d.id, name: str(x.name, 40) || "Korisnik", day: str(x.day, 10), pct: nr(x.pct), streak: nr(x.streak), last: str(x.last, 10), best: nr(x.best), smoke: x.smoke == null ? -1 : nr(x.smoke) };
       }));
     }, function (e) { KDB.teamError = poruka(e); cb(null); });
   };

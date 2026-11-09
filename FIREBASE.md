@@ -72,9 +72,9 @@ namirnice i jela u zajedničku listu. Tuđe profile i obroke ni tada ne može da
 | `korisnici.js` | spisak korisnika (otisci imena) | menja se samo u repozitorijumu | zauvek |
 | `namirnice/{id}` | namirnice koje su dodali korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |
 | `jela/{id}` | jela koja su napravili korisnici | svi prijavljeni vide i dodaju, menja/briše autor | zauvek |
-| `ekipa/{uid}` | ime, % današnjeg cilja, niz dana, najbolji niz | svi prijavljeni vide, piše vlasnik | zauvek (jedan mali zapis po osobi) |
-| `users/{uid}` | profil, nedavno izabrano, niz dana (datum početka), najbolji niz, težina | samo vlasnik | zauvek |
-| `users/{uid}/dani/{datum}` | obroci za taj dan | samo vlasnik | **15 dana**, stariji se brišu sami |
+| `ekipa/{uid}` | ime, % današnjeg cilja, niz dana, najbolji niz, dani bez cigare | svi prijavljeni vide, piše vlasnik | zauvek (jedan mali zapis po osobi) |
+| `users/{uid}` | profil, nedavno izabrano, niz dana (datum početka), najbolji niz, težina, dan poslednje cigare | samo vlasnik | zauvek |
+| `users/{uid}/dani/{datum}` | obroci i vežbanje za taj dan | samo vlasnik | **15 dana**, stariji se brišu sami |
 
 Težina se čuva štedljivo: prvo merenje, poslednjih 8 merenja i po jedan prosek za svaki stariji mesec.
 

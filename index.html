@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1f5c3a">
-<meta name="apple-mobile-web-app-title" content="Kalorije">
+<meta name="apple-mobile-web-app-title" content="bolja.ja">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>Kalorije</title>
+<title>bolja.ja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
@@ -125,6 +125,11 @@ main {
 .stat b { display: block; font-family: var(--display); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
 .stat small { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .stat.over b { color: var(--over); }
+.exbtn { width: 100%; margin-top: 12px; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--ok) 55%, transparent); background: color-mix(in srgb, var(--ok) 7%, transparent); color: var(--ink); font-weight: 600; }
+.exbtn svg { color: var(--ok); flex: none; }
+.exbtn span { flex: 1; text-align: left; }
+.exbtn b { font-family: var(--display); color: var(--ok); font-variant-numeric: tabular-nums; }
 .hint {
   margin-top: 12px; font-size: 0.85rem; color: var(--muted); text-align: center;
 }
@@ -232,7 +237,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .iconbtn svg { width: 20px; height: 20px; }
 @media (max-width: 430px) { .icon-narrow span { display: none; } .icon-narrow { width: 44px; padding: 0; justify-content: center; } }
 @media (max-width: 340px) { .iconbtn span { display: none; } .iconbtn { width: 44px; padding: 0; justify-content: center; } }
-.brand-sub { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
+.brand-sub { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; }
+#greet { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 430px) { #greet .hi { display: none; } }
 .streak { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; opacity: 1; color: var(--brand-ink); font-variant-numeric: tabular-nums; }
 .flame { width: 16px; height: 16px; flex: none; }
 
@@ -252,6 +259,18 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .tm-streak .flame { width: 22px; height: 22px; }
 .tm-streak.off { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
 .tm-streak small { font-family: var(--body); font-weight: 500; font-size: 0.68rem; color: var(--muted); }
+
+/* cigare */
+.smoke-big { text-align: center; padding: 8px 0 4px; }
+.smoke-big b { display: block; font-family: var(--display); font-weight: 800; font-size: 4rem; line-height: 1; color: var(--ok); font-variant-numeric: tabular-nums; }
+.smoke-big p { margin: 8px 0 0; font-size: 1.15rem; font-weight: 700; }
+.smoke-money { margin: 14px 0; text-align: center; padding: 14px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+.smoke-money b { font-family: var(--display); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.smoke-money small { display: block; color: var(--muted); }
+.smoke-actions { display: flex; flex-direction: column; gap: 10px; }
+.relapse { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.smoke-date { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.tm-smoke { color: var(--muted); }
 
 /* težina */
 .w-intro { margin: 0; color: var(--muted); }
@@ -408,12 +427,16 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 <header class="banner">
   <div class="banner-inner">
     <div class="brand">
-      <div class="brand-name">kalorije<span>.</span></div>
-      <div class="brand-sub"><span id="greet">Dnevni unos hrane</span><span class="streak" id="streakBadge" hidden title="Niz dana sa unetim obrocima"><svg class="flame" viewBox="0 0 24 24" aria-hidden="true"><path fill="#f07a1a" d="M12.6 2.2c.5 3 3.5 4.7 4.8 7.6 1.7 3.9-.6 9-5 9-4.2 0-6.7-3.3-5.6-6.9.4-1.5 1.4-2.6 2.4-3.3-.1 1.7.7 2.9 1.8 3.3-.7-3.7.4-6.8 1.6-9.7z"/><path fill="#ffc53d" d="M12.3 11.6c.3 1.5 1.8 2.3 2.3 3.8.6 1.9-.6 3.8-2.6 3.8s-3.1-1.6-2.6-3.2c.2-.7.7-1.2 1.2-1.5 0 .8.4 1.3.9 1.5-.2-1.6.3-3.1.8-4.4z"/></svg><b id="streakNum">0</b></span></div>
+      <div class="brand-name">bolja<span>.</span>ja</div>
+      <div class="brand-sub"><span id="greet"></span><span class="streak" id="streakBadge" hidden title="Niz dana sa unetim obrocima"><svg class="flame" viewBox="0 0 24 24" aria-hidden="true"><path fill="#f07a1a" d="M12.6 2.2c.5 3 3.5 4.7 4.8 7.6 1.7 3.9-.6 9-5 9-4.2 0-6.7-3.3-5.6-6.9.4-1.5 1.4-2.6 2.4-3.3-.1 1.7.7 2.9 1.8 3.3-.7-3.7.4-6.8 1.6-9.7z"/><path fill="#ffc53d" d="M12.3 11.6c.3 1.5 1.8 2.3 2.3 3.8.6 1.9-.6 3.8-2.6 3.8s-3.1-1.6-2.6-3.2c.2-.7.7-1.2 1.2-1.5 0 .8.4 1.3.9 1.5-.2-1.6.3-3.1.8-4.4z"/></svg><b id="streakNum">0</b></span></div>
     </div>
-    <button class="iconbtn" id="openTeam" aria-label="Ekipa">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16 14.2c3.1-.2 5.5 1.9 5.5 5"/></svg>
+    <button class="iconbtn icon-narrow" id="openTeam" aria-label="Ekipa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5a4 4 0 005.66 0l3.2-3.2a4 4 0 00-5.66-5.66l-1.1 1.1"/><path d="M13.5 10.5a4 4 0 00-5.66 0l-3.2 3.2a4 4 0 005.66 5.66l1.1-1.1"/></svg>
       <span>Ekipa</span>
+    </button>
+    <button class="iconbtn icon-narrow" id="openSmoke" aria-label="Bez cigare" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="15" height="4" rx="1"/><path d="M13 14v4M19.5 14v4M22 14v4M18 10c0-1.5 1.5-1.5 1.5-3S18 5.5 18 4M21 10c0-1.5 1.5-1.5 1.5-3S21 5.5 21 4"/></svg>
+      <span>Cigare</span>
     </button>
     <button class="iconbtn icon-narrow" id="openFoods" aria-label="Namirnice i jela">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
@@ -457,6 +480,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         <div class="mac c"><i></i>UH <b id="mC">0 g</b></div>
         <div class="mac f"><i></i>Masti <b id="mF">0 g</b></div>
       </div>
+      <button class="exbtn" id="exBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg><span id="exLbl">Dodaj vežbanje</span><b id="exVal"></b></button>
       <p class="hint" id="hint">Cilj je privremeno 2.000 kcal. <button id="hintBtn">Popuni profil</button> da izračunamo tvoju potrošnju.</p>
     </section>
 
@@ -474,7 +498,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 
 <div class="login" id="login" hidden>
   <form class="login-card" id="loginForm" novalidate>
-    <div class="login-logo">kalorije<span>.</span></div>
+    <div class="login-logo">bolja<span>.</span>ja</div>
     <p>Dobrodošao/la. Upiši svoje korisničko ime da uđeš.</p>
     <div class="field"><label for="username">Korisničko ime</label>
       <input id="username" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="npr. Ime1234"></div>
@@ -531,6 +555,34 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
+<div class="overlay" id="exOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="exTitle">
+    <div class="sheet-head">
+      <h2 id="exTitle">Vežbanje</h2>
+      <button class="x" id="exClose" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <form id="exForm" novalidate>
+      <p class="w-intro">Upiši koliko si kalorija potrošio/la vežbanjem za ovaj dan (sa sata, aplikacije ili sprave). Toliko se dodaje na dnevni cilj.</p>
+      <div class="field"><label for="exIn">Potrošeno vežbanjem</label>
+        <div class="qty"><div class="inwrap"><input id="exIn" type="text" inputmode="numeric" autocomplete="off" placeholder="0"><span class="u">kcal</span></div></div></div>
+      <div class="chips" id="exChips"></div>
+      <p class="err" id="exErr"></p>
+      <button class="btn" type="submit">Sačuvaj</button>
+      <button class="btn danger" type="button" id="exDel" hidden>Ukloni vežbanje</button>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="smokeOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="smokeTitle">
+    <div class="sheet-head">
+      <h2 id="smokeTitle">Bez cigare</h2>
+      <button class="x" id="smokeClose" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div id="smokeBody"></div>
+  </div>
+</div>
+
 <div class="overlay" id="weightOverlay" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="weightTitle">
     <div class="sheet-head">
@@ -559,31 +611,34 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-3"></script>
-<script src="korisnici.js?v=2026.11.09-3"></script>
-<script src="db.js?v=2026.11.09-3"></script>
-<script src="foods.js?v=2026.11.09-3"></script>
-<script src="jela.js?v=2026.11.09-3"></script>
+<script src="firebase-config.js?v=2026.11.09-4"></script>
+<script src="korisnici.js?v=2026.11.09-4"></script>
+<script src="db.js?v=2026.11.09-4"></script>
+<script src="foods.js?v=2026.11.09-4"></script>
+<script src="jela.js?v=2026.11.09-4"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-3";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-4";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
-    { id: "dorucak", name: "Doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
-    { id: "rucak",   name: "Ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
-    { id: "vecera",  name: "Večera",  icon: '<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>' },
-    { id: "uzine",   name: "Užine",   icon: '<path d="M12 7c-3-3-8-1-8 4s3 9 5 9c1 0 2-.5 3-.5s2 .5 3 .5c2 0 5-4 5-9s-5-7-8-4zM12 7c0-2 1-4 3-4"/>' },
-    { id: "ostalo",  name: "Ostalo",  icon: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' }
+    { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
+    { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
+    { id: "vecera",  name: "Večera",  acc: "večeru",  icon: '<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>' },
+    { id: "uzine",   name: "Užina i ostalo", acc: "užinu i ostalo", icon: '<path d="M12 7c-3-3-8-1-8 4s3 9 5 9c1 0 2-.5 3-.5s2 .5 3 .5c2 0 5-4 5-9s-5-7-8-4zM12 7c0-2 1-4 3-4"/>' }
   ];
   var KEY_BASE = "kalorije.v1";
   var state = emptyState();
   var day = todayKey();
   var openMeals = {};
 
-  function emptyState() { return { profile: null, days: {}, recent: [], recentDishes: [], streak: null, best: 0, weights: null }; }
+  function emptyState() { return { profile: null, days: {}, recent: [], recentDishes: [], streak: null, best: 0, weights: null, smoke: null }; }
   function fill(x) {
-    x.days = x.days || {}; x.recent = x.recent || []; x.recentDishes = x.recentDishes || []; x.profile = x.profile || null;
-    x.streak = x.streak || null; x.best = x.best || 0; x.weights = x.weights || null;
+    x.days = x.days || {};
+    Object.keys(x.days).forEach(function (k) {
+      var dd = x.days[k];
+      if (dd && dd.ostalo) { dd.uzine = (dd.uzine || []).concat(dd.ostalo); delete dd.ostalo; }
+    }); x.recent = x.recent || []; x.recentDishes = x.recentDishes || []; x.profile = x.profile || null;
+    x.streak = x.streak || null; x.best = x.best || 0; x.weights = x.weights || null; x.smoke = x.smoke || null;
     return x;
   }
   function userKey() { return KEY_BASE + "." + KDB.user.id; }
@@ -688,12 +743,15 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("prevDay").disabled = day <= windowStart();
     var sk = updateStreak();
     $("streakBadge").hidden = !KDB.user || sk.count < 1;
+    $("openSmoke").hidden = !smokeUser();
     $("streakNum").textContent = sk.count;
 
-    var g = goal();
+    var burned = burnedOn(day), g = goal() + burned;   // vežbanje povećava dnevni cilj
     var eaten = MEALS.reduce(function (s, m) { return s + mealTotal(m.id); }, 0);
     $("gNum").textContent = fmt(eaten);
     $("gUnit").textContent = "od " + fmt(g) + " kcal";
+    $("exLbl").textContent = burned ? "Vežbanje" : "Dodaj vežbanje";
+    $("exVal").textContent = burned ? "+" + fmt(burned) + " kcal" : "";
     $("sGoal").textContent = fmt(g);
     $("sEaten").textContent = fmt(eaten);
     var left = g - eaten;
@@ -702,7 +760,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     $("sLeftBox").classList.toggle("over", left < 0);
     $("hint").hidden = !!state.profile;
     $("profileDot").hidden = !!state.profile;
-    $("greet").textContent = KDB.user ? "Zdravo, " + KDB.user.name : "Dnevni unos hrane";
+    $("greet").innerHTML = KDB.user ? '<span class="hi">Zdravo, </span>' + esc(KDB.user.name) : "";
     drawGauge(eaten, g);
     var mac = { p: 0, f: 0, c: 0 };
     MEALS.forEach(function (m) { (dayData()[m.id] || []).forEach(function (it) { mac.p += it.p || 0; mac.f += it.f || 0; mac.c += it.c || 0; }); });
@@ -730,7 +788,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           });
           html += '</ul>';
         } else {
-          html += '<p class="empty">Još ništa za ' + m.name.toLowerCase() + '. Izaberi iz liste ili upiši ručno.</p>';
+          html += '<p class="empty">Još ništa za ' + m.acc + '. Izaberi iz liste ili upiši ručno.</p>';
         }
         html += '<div class="meal-actions"><button class="btn" data-pick="' + m.id + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Dodaj iz liste</button></div>';
         html += '<p class="manual-lbl">Ili ručno</p><form class="add" data-add="' + m.id + '">' +
@@ -1427,6 +1485,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           if (cloud && metaDirty) {
             state.streak = local.streak || state.streak; state.best = Math.max(local.best || 0, state.best || 0);
             state.weights = state.weights || local.weights;
+            state.smoke = local.smoke || state.smoke;
           }
           personalReady = true;
           seedWeight();
@@ -1441,7 +1500,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       }
       if (!uid && lastUid) {
         lastUid = null; state = emptyState(); openMeals = {}; personalReady = false;
-        closeSheet(); closeFoods(); closeTeam(); closeWeight(); render();
+        closeSheet(); closeFoods(); closeTeam(); closeWeight(); closeExercise(); closeSmoke(); render();
       }
       renderAccount();
     }
@@ -1492,7 +1551,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var t = todayKey(), dd = state.days[t] || {}, eaten = 0;
     MEALS.forEach(function (m) { (dd[m.id] || []).forEach(function (it) { eaten += it.kcal || 0; }); });
     var sk = updateStreak();
-    return { name: KDB.user.name, day: t, pct: Math.min(999, Math.round(eaten / goal() * 100)), streak: sk.count, last: sk.last || "", best: state.best || 0 };
+    var doc = { name: KDB.user.name, day: t, pct: Math.min(999, Math.round(eaten / (goal() + burnedOn(t)) * 100)), streak: sk.count, last: sk.last || "", best: state.best || 0 };
+    if (smokeOn()) doc.smoke = smokeDays();
+    return doc;
   }
 
   // ---------- Ekipa ----------
@@ -1520,7 +1581,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       return;
     }
     var t = todayKey(), y = shift(t, -1), me = KDB.myId();
-    var list = teamList.slice();
+    var names = (window.KORISNICI || []).map(function (u) { return u.name; });
+    var list = teamList.filter(function (m) { return names.indexOf(m.name) !== -1; });   // samo trenutni korisnici
     // ja uvek sa najsvežijim podacima, i kad upis u bazu još nije stigao
     var mine = Object.assign({ uid: me }, teamDoc());
     list = list.filter(function (m) { return m.uid !== me; }).concat([mine]);
@@ -1530,17 +1592,18 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     });
     list.sort(function (a, b) { return b.active - a.active || (b.today ? b.pct : -1) - (a.today ? a.pct : -1) || a.name.localeCompare(b.name, "sr"); });
     var logged = list.filter(function (m) { return m.today && m.pct > 0; }).length;
-    var html = '<p class="team-sum">Danas je ' + logged + ' od ' + list.length + ' unelo obroke.</p><ul class="team">';
+    var html = '<p class="team-sum">Danas ' + (list.length === 2 ? (logged === 2 ? "ste oboje uneli obroke." : logged === 1 ? "je jedno od vas unelo obroke." : "još niko nije uneo obroke.") : "je " + logged + " od " + list.length + " unelo obroke.") + '</p><ul class="team">';
     list.forEach(function (m) {
       var pct = m.today ? m.pct : 0, cls = pct > 110 ? "over" : pct > 100 ? "near" : "";
       html += '<li class="tm' + (m.uid === me ? " me" : "") + '"><span class="ava">' + esc(m.name.charAt(0)) + '</span>' +
         '<div class="tm-main"><b>' + esc(m.name) + (m.uid === me ? " <small>(ti)</small>" : "") + '</b>' +
         '<div class="tbar"><i class="' + cls + '" style="width:' + Math.min(100, pct) + '%"></i></div>' +
-        '<small>' + (pct > 0 ? pct + "% današnjeg cilja" : "Danas još ništa") + (m.best > 1 ? " · najbolji niz " + m.best : "") + '</small></div>' +
+        '<small>' + (pct > 0 ? pct + "% današnjeg cilja" : "Danas još ništa") + (m.best > 1 ? " · najbolji niz " + m.best : "") + '</small>' +
+        (m.smoke >= 0 ? '<small class="tm-smoke">Bez cigare: ' + m.smoke + ' ' + daysWord(m.smoke) + '</small>' : "") + '</div>' +
         (m.active ? '<span class="tm-streak">' + FLAME + m.active + '<small>' + (m.active === 1 ? "dan" : "dana") + '</small></span>'
                   : '<span class="tm-streak off">0<small>dana</small></span>') + '</li>';
     });
-    html += '</ul><p class="src" style="margin-top:12px">Vidi se samo procenat današnjeg cilja i niz dana zaredom sa unetim obrocima, ne i šta je ko jeo.</p>';
+    html += '</ul><p class="src" style="margin-top:12px">Vidi se samo procenat današnjeg cilja, niz dana zaredom sa unetim obrocima i dani bez cigare, ne i šta je ko jeo.</p>';
     $("teamBody").innerHTML = html;
   }
   KDB.onChange(function (what) { if (what === "team" && teamUnsub) renderTeam(); });
@@ -1581,7 +1644,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     try { if (localStorage.getItem(weightKey()) === todayKey()) return false; } catch (e) {}
     return true;
   }
-  function anyOpen() { return !$("overlay").hidden || !$("foodOverlay").hidden || !$("teamOverlay").hidden || !$("weightOverlay").hidden; }
+  function anyOpen() {
+    return ["overlay", "foodOverlay", "teamOverlay", "weightOverlay", "exOverlay", "smokeOverlay"].some(function (id) { return !$(id).hidden; });
+  }
   function maybeAskWeight() { if (weightDue() && !anyOpen()) openWeight(true); }
   function openWeight(prompted) {
     var l = lastWeight();
@@ -1668,6 +1733,96 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") checkVersion(); });
   setTimeout(checkVersion, 3000);
 
+  // ---------- rod u tekstu (potrošio / potrošila) ----------
+  // muški / ženski oblik prema polu iz profila; bez profila "potrošio/la"
+  function gw(m, f) {
+    var sx = state.profile && state.profile.sex;
+    if (sx === "m") return m;
+    if (sx === "f") return f;
+    var stem = m.slice(0, -1);
+    return f.indexOf(stem) === 0 ? m + "/" + f.slice(stem.length) : m + "/" + f;
+  }
+  function daysWord(n) { return n % 10 === 1 && n % 100 !== 11 ? "dan" : "dana"; }
+
+  // ---------- vežbanje ----------
+  // Kalorije potrošene vežbanjem čuvaju se u danu kao "vezbanje" i dodaju se na dnevni cilj.
+  function burnedOn(k) { var dd = state.days[k]; return dd && dd.vezbanje > 0 ? dd.vezbanje : 0; }
+  function openExercise() {
+    var b = burnedOn(day);
+    $("exTitle").textContent = day === todayKey() ? "Vežbanje danas" : "Vežbanje · " + dateLabel(day).slice(0, -1);
+    $("exForm").querySelector(".w-intro").textContent = "Upiši koliko si kalorija " + gw("potrošio", "potrošila") +
+      " vežbanjem za ovaj dan (sa sata, aplikacije ili sprave). Toliko se dodaje na dnevni cilj.";
+    $("exIn").value = b ? b : "";
+    $("exErr").textContent = "";
+    $("exDel").hidden = !b;
+    $("exChips").innerHTML = [100, 200, 300, 500].map(function (v) { return '<button class="chip" type="button" data-ex="' + v + '">' + v + ' kcal</button>'; }).join("");
+    $("exOverlay").hidden = false; document.body.style.overflow = "hidden";
+  }
+  function closeExercise() { $("exOverlay").hidden = true; if (!anyOpen()) document.body.style.overflow = ""; }
+  function setBurned(v) {
+    state.days[day] = state.days[day] || {};
+    if (v > 0) state.days[day].vezbanje = v; else delete state.days[day].vezbanje;
+    save(); render(); closeExercise();
+  }
+  $("exBtn").onclick = openExercise;
+  $("exClose").onclick = closeExercise;
+  $("exOverlay").addEventListener("click", function (e) {
+    if (e.target === this) return closeExercise();
+    var c = e.target.closest("[data-ex]"); if (c) $("exIn").value = c.getAttribute("data-ex");
+  });
+  $("exDel").onclick = function () { setBurned(0); };
+  $("exForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = Math.round(parseFloat(String($("exIn").value).replace(",", ".")) || 0);
+    if (v < 0 || v > 5000) { $("exErr").textContent = "Unesi broj između 0 i 5000 kcal."; return; }
+    setBurned(v);
+  });
+
+  // ---------- bez cigare ----------
+  // state.smoke = { since: "YYYY-MM-DD" } — dan poslednje cigare; brojač kreće od tog dana.
+  var PACK_PRICE = 450;   // dinara; jedna kutija dnevno
+  function smokeUser() {
+    var me = KDB.user && (window.KORISNICI || []).filter(function (u) { return u.id === KDB.user.id; })[0];
+    return !!(me && me.cigare);
+  }
+  function smokeOn() { return !!(state.smoke && state.smoke.since); }
+  function smokeDays() { return smokeOn() ? Math.max(0, daysBetween(state.smoke.since, todayKey())) : 0; }
+  function smokeMoney() { return smokeDays() * PACK_PRICE; }
+  var SAD = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 16.5c2.2-2.2 5.8-2.2 8 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg>';
+  function openSmoke() {
+    renderSmoke();
+    $("smokeOverlay").hidden = false; document.body.style.overflow = "hidden";
+  }
+  function closeSmoke() { $("smokeOverlay").hidden = true; if (!anyOpen()) document.body.style.overflow = ""; }
+  $("openSmoke").onclick = openSmoke;
+  $("smokeClose").onclick = closeSmoke;
+  $("smokeOverlay").addEventListener("click", function (e) { if (e.target === this) closeSmoke(); });
+  function setSmokeSince(k) { state.smoke = { since: k }; save(); render(); renderSmoke(); }
+  function renderSmoke() {
+    var html;
+    if (!smokeOn()) {
+      html = '<p class="w-intro">Brojimo dane bez cigare i koliko je novca ušteđeno (' + PACK_PRICE + ' din za svaki dan, jedna kutija dnevno).</p>' +
+        '<div class="smoke-date"><label class="lbl" for="smokeDate">Kad je bila poslednja cigara?</label>' +
+        '<input id="smokeDate" type="date" max="' + todayKey() + '" value="' + todayKey() + '">' +
+        '<button class="btn" type="button" id="smokeStart">Kreni sa brojanjem</button></div>';
+    } else {
+      var n = smokeDays();
+      html = '<div class="smoke-big"><b>' + n + '</b><p>' + (n === 1 ? "dan" : "dana") + ' od poslednje cigare!</p></div>' +
+        '<div class="smoke-money"><small>To je</small><b>' + fmt(smokeMoney()) + ' dinara</b><small>ušteđeno</small></div>' +
+        '<div class="smoke-actions"><button class="btn danger relapse" type="button" id="relapse">' + SAD +
+          '<span>' + gw("Prekršio", "Prekršila") + ' sam</span></button></div>' +
+        '<details class="smoke-date"><summary class="src">Promeni datum poslednje cigare</summary>' +
+        '<input id="smokeDate" type="date" max="' + todayKey() + '" value="' + state.smoke.since + '">' +
+        '<button class="btn ghost" type="button" id="smokeStart">Sačuvaj datum</button></details>';
+    }
+    $("smokeBody").innerHTML = html;
+    $("smokeStart").onclick = function () {
+      var k = $("smokeDate").value;
+      if (k && k <= todayKey()) setSmokeSince(k);
+    };
+    if ($("relapse")) confirmClick($("relapse"), "Sigurno? Brojanje kreće od nule.", function () { setSmokeSince(todayKey()); });
+  }
+
   // ---------- izvoz u PDF i deljenje ----------
   // Biblioteka i font se učitaju unapred (posle prijave), da bi klik odmah otvorio deljenje:
   // telefoni dozvoljavaju meni za deljenje samo neposredno posle dodira.
@@ -1701,12 +1856,12 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     function need(h) { if (y + h > 282) { doc.addPage(); y = 20; } }
     function dot(x, yy, col) { doc.setFillColor.apply(doc, col); doc.circle(x, yy, 1.3, "F"); }
 
-    var g = goal(), dd = dayData(), eaten = 0, mp = 0, mc = 0, mf = 0;
+    var burned = burnedOn(day), g = goal() + burned, dd = dayData(), eaten = 0, mp = 0, mc = 0, mf = 0;
     MEALS.forEach(function (m) { (dd[m.id] || []).forEach(function (it) { eaten += it.kcal; mp += it.p || 0; mc += it.c || 0; mf += it.f || 0; }); });
 
     // zaglavlje
     doc.setFillColor.apply(doc, BRAND); doc.rect(0, 0, W, 34, "F");
-    font("bold", 22, [242, 247, 241]); doc.text("kalorije.", L, 16);
+    font("bold", 22, [242, 247, 241]); doc.text("bolja.ja", L, 16);
     font("normal", 11, [220, 235, 222]); doc.text((KDB.user ? KDB.user.name + " · " : "") + dateLabel(day), L, 25);
     y = 46;
 
@@ -1726,6 +1881,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       font("bold", 10, INK); doc.text(fmt(mm[2]) + " g", x + boxW - 2, y, { align: "right" });
     });
     y += 8;
+    if (burned) { font("normal", 9, MUTED); doc.text("Cilj uključuje vežbanje: +" + fmt(burned) + " kcal", L, y); y += 5; }
+    if (smokeOn()) { font("normal", 9, MUTED); doc.text("Bez cigare: " + smokeDays() + " " + daysWord(smokeDays()) + ", ušteđeno " + fmt(smokeMoney()) + " din", L, y); y += 5; }
     if (state.profile) {
       var r = calc(state.profile);
       font("normal", 9, MUTED);
@@ -1773,19 +1930,19 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     for (var i = 1; i <= pages; i++) {
       doc.setPage(i);
       font("normal", 8, MUTED);
-      doc.text("Napravljeno u aplikaciji Kalorije · P = proteini, UH = ugljeni hidrati, M = masti (u gramima)", L, 290);
+      doc.text("Napravljeno u aplikaciji bolja.ja · P = proteini, UH = ugljeni hidrati, M = masti (u gramima)", L, 290);
       if (pages > 1) doc.text(i + " / " + pages, R, 290, { align: "right" });
     }
     return doc.output("blob");
   }
 
   function exportMsg(t) { $("exportMsg").textContent = t || ""; }
-  function fileName() { return "kalorije-" + (KDB.user ? norm(KDB.user.name) + "-" : "") + day + ".pdf"; }
+  function fileName() { return "bolja-ja-" + (KDB.user ? norm(KDB.user.name) + "-" : "") + day + ".pdf"; }
 
   function sharePdf() {
     var blob = buildPdf();
     var file = new File([blob], fileName(), { type: "application/pdf" });
-    var title = "Kalorije – " + (KDB.user ? KDB.user.name + ", " : "") + dateLabel(day);
+    var title = "bolja.ja – " + (KDB.user ? KDB.user.name + ", " : "") + dateLabel(day);
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       return navigator.share({ files: [file], title: title }).then(function () { exportMsg(""); }, function (e) {
         if (e && e.name === "AbortError") return exportMsg("");

@@ -1,10 +1,10 @@
 rules_version = '2';
-// Pravila pristupa za Kalorije. Kopiraj ceo fajl u Firebase konzolu:
+// Pravila pristupa za bolja.ja. Kopiraj ceo fajl u Firebase konzolu:
 // Firestore Database -> Rules -> Publish.
 //
 // Ko šta sme:
 //  - namirnice, jela: svi prijavljeni čitaju i dodaju; menja i briše samo autor
-//  - ekipa/{uid}: svi prijavljeni čitaju (ime, % cilja, niz dana); piše samo vlasnik
+//  - ekipa/{uid}: svi prijavljeni čitaju (ime, % cilja, niz dana, dani bez cigare); piše samo vlasnik
 //  - users/{uid} i users/{uid}/dani: samo vlasnik
 // Pored toga, svaki upis mora da ima samo poznata polja, pravog tipa i razumne veličine,
 // da niko ne bi mogao da ubaci smeće ili ogromne zapise.
@@ -56,28 +56,30 @@ service cloud.firestore {
       allow read: if signedIn();
       allow delete: if isOwner(uid);
       allow create, update: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['name', 'day', 'pct', 'streak', 'last', 'best', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['name', 'day', 'pct', 'streak', 'last', 'best', 'smoke', 'updatedAt'])
+        && (!('smoke' in request.resource.data) || num(request.resource.data.smoke, 100000))
         && str(request.resource.data.name, 40) && day(request.resource.data.day)
         && num(request.resource.data.pct, 999) && num(request.resource.data.streak, 100000)
         && num(request.resource.data.best, 100000) && str(request.resource.data.last, 10)
         && stamp(request.resource.data, 'updatedAt');
     }
 
-    // Lični podaci: profil, nedavno, niz dana, težina
+    // Lični podaci: profil, nedavno, niz dana, težina, dan poslednje cigare
     match /users/{uid} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['name', 'updatedAt', 'profile', 'recent', 'recentDishes', 'streak', 'best', 'weights'])
+        && request.resource.data.keys().hasOnly(['name', 'updatedAt', 'profile', 'recent', 'recentDishes', 'streak', 'best', 'weights', 'smoke'])
         && (!('recent' in request.resource.data) || (request.resource.data.recent is list && request.resource.data.recent.size() <= 50))
         && (!('recentDishes' in request.resource.data) || (request.resource.data.recentDishes is list && request.resource.data.recentDishes.size() <= 50));
 
-      // Obroci po danima (aplikacija čuva poslednjih 15 dana)
+      // Obroci po danima i kalorije potrošene vežbanjem (aplikacija čuva poslednjih 15 dana)
       match /dani/{d} {
         allow read, delete: if isOwner(uid);
         allow create, update: if isOwner(uid) && day(d)
           && request.resource.data.keys().hasOnly(['meals'])
           && request.resource.data.meals is map
-          && request.resource.data.meals.keys().hasOnly(['dorucak', 'rucak', 'vecera', 'uzine', 'ostalo']);
+          && request.resource.data.meals.keys().hasOnly(['dorucak', 'rucak', 'vecera', 'uzine', 'ostalo', 'vezbanje'])
+          && (!('vezbanje' in request.resource.data.meals) || num(request.resource.data.meals.vezbanje, 5000));
       }
     }
   }
