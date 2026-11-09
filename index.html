@@ -209,16 +209,28 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
 .seg input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
 .err { color: var(--over); font-size: 0.88rem; min-height: 1.2em; margin: 0; }
 
-.results { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.results { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qw { gap: 6px; margin-bottom: 14px; }
+.qw .lbl { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.qw-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.qw input { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bmi-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-left: 8px; vertical-align: 3px; }
+.prof-details { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.prof-details > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.prof-details > summary::-webkit-details-marker { display: none; }
+.prof-details > summary b { display: block; font-weight: 700; }
+.prof-details > summary span { flex: 1; min-width: 0; color: var(--muted); font-size: 0.85rem; }
+.prof-details > summary .chev { transition: transform .2s; }
+.prof-details[open] > summary .chev { transform: rotate(180deg); }
+.prof-details[open] > form { margin-top: 12px; }
+.prof-details.first { border-top: 0; margin-top: 0; padding-top: 0; }
+.prof-details.first > summary { display: none; }
+#results:not(:empty) { margin-bottom: 4px; }
 .res { background: var(--bg); border-radius: 12px; padding: 12px; }
 .res small { display: block; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .res b { display: block; font-family: var(--display); font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .res span { font-size: 0.85rem; }
-.res.wide { grid-column: 1 / -1; }
 .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; color: #fff; }
-.bmi-bar { position: relative; height: 8px; border-radius: 4px; margin-top: 10px;
-  background: linear-gradient(90deg, #5b8fd6 0 17.5%, #3aa35f 17.5% 45%, #e0a526 45% 70%, #c4442f 70% 100%); }
-.bmi-mark { position: absolute; top: -4px; width: 4px; height: 16px; border-radius: 2px; background: var(--ink); transform: translateX(-50%); }
 .note { color: var(--muted); font-size: 0.8rem; margin-top: 12px; }
 .export { display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 6px; }
 .export-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 16px; font-size: 1rem;
@@ -514,34 +526,43 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       <button class="x" id="closeProfile" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div id="account"></div>
-    <form id="profileForm" novalidate>
-      <div class="field">
-        <span class="lbl">Pol</span>
-        <div class="seg">
-          <input type="radio" name="sex" id="sexM" value="m"><label for="sexM">Muško</label>
-          <input type="radio" name="sex" id="sexF" value="f"><label for="sexF">Žensko</label>
-        </div>
-      </div>
-      <div class="row2">
-        <div class="field"><label for="height">Visina (cm)</label><input id="height" type="number" inputmode="numeric" min="100" max="250" placeholder="180"></div>
-        <div class="field"><label for="weight">Težina (kg)</label><input id="weight" type="text" inputmode="decimal" autocomplete="off" placeholder="80"></div>
-      </div>
-      <div class="field"><label for="dob">Datum rođenja</label><input id="dob" type="date"></div>
-      <div class="field">
-        <label for="activity">Koliko si fizički aktivan nedeljno?</label>
-        <select id="activity">
-          <option value="1.2">Sedentarno – kancelarija, bez treninga</option>
-          <option value="1.375">Lagano – trening 1–3 dana nedeljno</option>
-          <option value="1.55">Umereno – trening 3–5 dana nedeljno</option>
-          <option value="1.725">Aktivno – trening 6–7 dana nedeljno</option>
-          <option value="1.9">Veoma aktivno – fizički posao ili 2 treninga dnevno</option>
-        </select>
-      </div>
-      <p class="err" id="err"></p>
-      <button class="btn" type="submit">Izračunaj i sačuvaj</button>
+    <form class="qw" id="qwForm" novalidate hidden>
+      <label class="lbl" for="qwIn">Težina danas</label>
+      <div class="qw-row"><div class="inwrap unitin"><input id="qwIn" type="text" inputmode="decimal" autocomplete="off"><span class="u">kg</span></div>
+        <button class="btn" type="submit">Sačuvaj</button></div>
+      <p class="err" id="qwErr"></p>
     </form>
     <div id="results"></div>
     <div id="weightSection"></div>
+    <details class="prof-details" id="profDetails">
+      <summary id="profSummary"></summary>
+      <form id="profileForm" novalidate>
+        <div class="field">
+          <span class="lbl">Pol</span>
+          <div class="seg">
+            <input type="radio" name="sex" id="sexM" value="m"><label for="sexM">Muško</label>
+            <input type="radio" name="sex" id="sexF" value="f"><label for="sexF">Žensko</label>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="height">Visina (cm)</label><input id="height" type="number" inputmode="numeric" min="100" max="250" placeholder="180"></div>
+          <div class="field" id="weightField"><label for="weight">Težina (kg)</label><input id="weight" type="text" inputmode="decimal" autocomplete="off" placeholder="80"></div>
+        </div>
+        <div class="field"><label for="dob">Datum rođenja</label><input id="dob" type="date"></div>
+        <div class="field">
+          <label for="activity">Koliko si fizički aktivan nedeljno?</label>
+          <select id="activity">
+            <option value="1.2">Sedentarno – kancelarija, bez treninga</option>
+            <option value="1.375">Lagano – trening 1–3 dana nedeljno</option>
+            <option value="1.55">Umereno – trening 3–5 dana nedeljno</option>
+            <option value="1.725">Aktivno – trening 6–7 dana nedeljno</option>
+            <option value="1.9">Veoma aktivno – fizički posao ili 2 treninga dnevno</option>
+          </select>
+        </div>
+        <p class="err" id="err"></p>
+        <button class="btn" type="submit" id="profSave">Izračunaj i sačuvaj</button>
+      </form>
+    </details>
   </div>
 </div>
 
@@ -611,15 +632,15 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-4"></script>
-<script src="korisnici.js?v=2026.11.09-4"></script>
-<script src="db.js?v=2026.11.09-4"></script>
-<script src="foods.js?v=2026.11.09-4"></script>
-<script src="jela.js?v=2026.11.09-4"></script>
+<script src="firebase-config.js?v=2026.11.09-5"></script>
+<script src="korisnici.js?v=2026.11.09-5"></script>
+<script src="db.js?v=2026.11.09-5"></script>
+<script src="foods.js?v=2026.11.09-5"></script>
+<script src="jela.js?v=2026.11.09-5"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-4";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-5";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -850,17 +871,28 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   setInterval(checkNewDay, 60000);
 
   // ---------- profile ----------
+  var ACT = { "1.2": "bez treninga", "1.375": "trening 1–3 dana", "1.55": "trening 3–5 dana", "1.725": "trening 6–7 dana", "1.9": "veoma aktivno" };
+  // Kad je profil popunjen: gore samo kilaža, BMI i potrošnja; "Moji podaci" su skupljeni.
   function openSheet() {
     var p = state.profile;
     if (p) {
       $(p.sex === "m" ? "sexM" : "sexF").checked = true;
-      $("height").value = p.height; $("weight").value = String(p.weight).replace(".", ","); $("dob").value = p.dob;
+      $("height").value = p.height; $("weight").value = dec(p.weight); $("dob").value = p.dob;
       $("activity").value = String(p.activity);
+      $("qwIn").value = dec(p.weight);
+      $("profSummary").innerHTML = '<span><b>Moji podaci</b>' + (p.sex === "m" ? "Muško" : "Žensko") + " · " + p.height + " cm · " +
+        age(p.dob) + " god. · " + (ACT[String(p.activity)] || "") + '</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>';
       showResults(p);
     } else {
       $("results").innerHTML = "";
       $("profileForm").reset();
     }
+    $("qwForm").hidden = !p;
+    $("weightField").hidden = !!p;          // težina se posle unosi gore, kao merenje
+    $("profDetails").classList.toggle("first", !p);
+    $("profDetails").open = !p;
+    $("profSave").textContent = p ? "Sačuvaj podatke" : "Izračunaj i sačuvaj";
+    $("qwErr").textContent = "";
     $("err").textContent = "";
     renderWeightSection();
     $("overlay").hidden = false;
@@ -886,21 +918,25 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     if (err) return;
     state.profile = { sex: sex, height: h, weight: w, dob: dob, activity: parseFloat($("activity").value) };
     seedWeight();
-    save(); showResults(state.profile); renderWeightSection(); render();
+    save(); render(); openSheet();          // posle čuvanja se podaci skupe
+  });
+
+  $("qwForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var kg = parseFloat(String($("qwIn").value).replace(",", "."));
+    if (!(kg >= 30 && kg <= 300)) { $("qwErr").textContent = "Unesi težinu između 30 i 300 kg."; return; }
+    addWeight(Math.round(kg * 10) / 10);
+    openSheet();
   });
 
   function showResults(p) {
     var r = calc(p), c = bmiCat(r.bmi);
-    var pos = Math.max(0, Math.min(100, (r.bmi - 15) / 20 * 100)); // skala 15–35
     $("results").innerHTML =
       '<div class="results">' +
-        '<div class="res wide"><small>BMI · indeks telesne mase</small><b>' + r.bmi.toFixed(1).replace(".", ",") + '</b>' +
-          '<span class="pill" style="background:' + c.c + '">' + c.t + '</span>' +
-          '<div class="bmi-bar"><div class="bmi-mark" style="left:' + pos + '%"></div></div></div>' +
-        '<div class="res"><small>Bazalni metabolizam</small><b>' + fmt(r.bmr) + '</b><span>kcal / dan u mirovanju</span></div>' +
-        '<div class="res"><small>Prosečna potrošnja</small><b>' + fmt(r.tdee) + '</b><span>kcal / dan sa aktivnošću</span></div>' +
+        '<div class="res"><small>BMI</small><b>' + r.bmi.toFixed(1).replace(".", ",") + '<i class="bmi-dot" style="background:' + c.c + '" title="' + c.t + '"></i></b><span>' + c.t + '</span></div>' +
+        '<div class="res"><small>Dnevna potrošnja</small><b>' + fmt(r.tdee) + '</b><span>kcal sa aktivnošću</span></div>' +
       '</div>' +
-      '<p class="note">' + r.age + ' god. Računato po Mifflin-St Jeor formuli × faktor aktivnosti ' + String(p.activity).replace(".", ",") + '. Za mršavljenje ~0,5 kg nedeljno jedi oko ' + fmt(r.tdee - 500) + ' kcal dnevno.</p>';
+      '<p class="note">Bazalni metabolizam ' + fmt(r.bmr) + ' kcal (Mifflin-St Jeor). Za mršavljenje ~0,5 kg nedeljno jedi oko ' + fmt(r.tdee - 500) + ' kcal dnevno.</p>';
   }
 
 
@@ -1711,10 +1747,9 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         weightChart(pts) +
         '<p class="src">Poslednje merenje: ' + dateLabel(l.d) + ' Starija merenja se čuvaju kao mesečni prosek.</p>';
     } else {
-      html += '<p class="src">Još nema merenja. Upiši težinu jednom nedeljno, pa ćeš ovde videti grafikon.</p>';
+      html += '<p class="src">Još nema merenja. Upiši težinu gore jednom nedeljno, pa ćeš ovde videti grafikon.</p>';
     }
-    el.innerHTML = html + '<button class="btn ghost" type="button" id="wAdd">Upiši merenje</button></div>';
-    $("wAdd").onclick = function () { openWeight(false); };
+    el.innerHTML = html + '</div>';
   }
 
   // ---------- automatsko osvežavanje nove verzije ----------
@@ -1840,6 +1875,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   }
   function pdfReady() { return !!(window.jspdf && window.KPDF_FONT); }
 
+  function shortDate(k) { var d = parseKey(k); return d.getDate() + ". " + MONTHS[d.getMonth()].slice(0, 3) + " " + d.getFullYear() + "."; }
   function dateLabel(k) { var d = parseKey(k); return DAYS[d.getDay()] + ", " + d.getDate() + ". " + MONTHS[d.getMonth()] + " " + d.getFullYear() + "."; }
 
   function buildPdf() {
@@ -1881,14 +1917,52 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       font("bold", 10, INK); doc.text(fmt(mm[2]) + " g", x + boxW - 2, y, { align: "right" });
     });
     y += 8;
-    if (burned) { font("normal", 9, MUTED); doc.text("Cilj uključuje vežbanje: +" + fmt(burned) + " kcal", L, y); y += 5; }
-    if (smokeOn()) { font("normal", 9, MUTED); doc.text("Bez cigare: " + smokeDays() + " " + daysWord(smokeDays()) + ", ušteđeno " + fmt(smokeMoney()) + " din", L, y); y += 5; }
+    y += 2;
+
+    // pregled: vežbanje, niz dana, cigare, telo
+    var rows = [];
+    if (burned) rows.push(["Vežbanje", "+" + fmt(burned) + " kcal (uračunato u cilj)"]);
+    var sk = updateStreak();
+    rows.push(["Niz dana", sk.count + " " + daysWord(sk.count) + " zaredom sa unetim obrocima · najbolji " + (state.best || sk.count)]);
+    if (smokeOn()) rows.push(["Bez cigare", smokeDays() + " " + daysWord(smokeDays()) + " · ušteđeno " + fmt(smokeMoney()) + " din"]);
     if (state.profile) {
-      var r = calc(state.profile);
-      font("normal", 9, MUTED);
-      doc.text("Visina " + state.profile.height + " cm · Težina " + String(state.profile.weight).replace(".", ",") + " kg · BMI " +
-        r.bmi.toFixed(1).replace(".", ",") + " (" + bmiCat(r.bmi).t.toLowerCase() + ") · Dnevna potrošnja " + fmt(r.tdee) + " kcal", L, y);
-      y += 6;
+      var r = calc(state.profile), bc = bmiCat(r.bmi);
+      rows.push(["BMI", r.bmi.toFixed(1).replace(".", ",") + " · " + bc.t.toLowerCase(), bc.c]);
+      rows.push(["Telo", state.profile.height + " cm · " + dec(state.profile.weight) + " kg · dnevna potrošnja " + fmt(r.tdee) + " kcal"]);
+    }
+    var w = state.weights, lw = lastWeight();
+    if (w && lw && w.start) {
+      var dw = lw.kg - w.start.kg;
+      rows.push(["Težina", "početak " + dec(w.start.kg) + " kg (" + shortDate(w.start.d) + "), sada " + dec(lw.kg) + " kg (" + (dw > 0 ? "+" : dw < 0 ? "−" : "") + dec(Math.abs(dw)) + " kg)"]);
+    }
+    var boxH = rows.length * 6.5 + 5;
+    doc.setFillColor(244, 247, 243); doc.roundedRect(L, y, R - L, boxH, 2.5, 2.5, "F");
+    rows.forEach(function (rw, i) {
+      var yy = y + 7 + i * 6.5;
+      font("normal", 9, MUTED); doc.text(rw[0], L + 4, yy);
+      if (rw[2]) { var hx = rw[2].replace("#", ""); dot(L + 34, yy - 1.1, [parseInt(hx.slice(0, 2), 16), parseInt(hx.slice(2, 4), 16), parseInt(hx.slice(4, 6), 16)]); }
+      font("bold", 9.5, INK); doc.text(rw[1], L + (rw[2] ? 37 : 32), yy);
+    });
+    y += boxH + 6;
+
+    // grafikon težine
+    var pts = weightPoints();
+    if (pts.length > 1) {
+      var cx0 = L + 12, cx1 = R - 2, cy0 = y + 4, cy1 = y + 30;
+      var ks = pts.map(function (p) { return p.kg; }), lo = Math.floor(Math.min.apply(null, ks) - 1), hi = Math.ceil(Math.max.apply(null, ks) + 1);
+      var t0 = parseKey(pts[0].d).getTime(), t1 = parseKey(pts[pts.length - 1].d).getTime(), span = Math.max(t1 - t0, 1);
+      var PX = function (p) { return cx0 + (parseKey(p.d).getTime() - t0) / span * (cx1 - cx0); };
+      var PY = function (kg) { return cy0 + (hi - kg) / (hi - lo) * (cy1 - cy0); };
+      font("bold", 10, INK); doc.text("Težina kroz vreme", L, y); y += 2;
+      doc.setDrawColor.apply(doc, LINE); doc.setLineWidth(0.2);
+      [lo, hi].forEach(function (v) { doc.line(cx0, PY(v), cx1, PY(v)); font("normal", 7.5, MUTED); doc.text(dec(v), cx0 - 2, PY(v) + 1, { align: "right" }); });
+      doc.setDrawColor(47, 138, 79); doc.setLineWidth(0.7);
+      for (var pi = 1; pi < pts.length; pi++) doc.line(PX(pts[pi - 1]), PY(pts[pi - 1].kg), PX(pts[pi]), PY(pts[pi].kg));
+      doc.setFillColor(47, 138, 79);
+      pts.forEach(function (p) { doc.circle(PX(p), PY(p.kg), 0.9, "F"); });
+      font("normal", 7.5, MUTED);
+      doc.text(shortDate(pts[0].d), cx0, cy1 + 4); doc.text(shortDate(pts[pts.length - 1].d), cx1, cy1 + 4, { align: "right" });
+      y = cy1 + 9;
     }
     hr(y); y += 9;
 
@@ -1908,7 +1982,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       doc.text("P", 152, y, { align: "right" }); doc.text("UH", 172, y, { align: "right" }); doc.text("M", R, y, { align: "right" });
       y += 2; hr(y); y += 5;
       items.forEach(function (it) {
-        var name = doc.splitTextToSize(it.name, 82);
+        font("normal", 10, INK);                         // veličina mora biti postavljena pre prelamanja
+        var name = doc.splitTextToSize(it.name, 72);
         need(name.length * 4.6 + 3);
         font("normal", 10, INK); doc.text(name, L, y);
         var qty = it.dish ? dec(it.qty) + " porc." : it.food ? fmt(it.qty) + " " + it.unit : "";
