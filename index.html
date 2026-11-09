@@ -166,8 +166,6 @@ main {
   color: var(--over); background: color-mix(in srgb, var(--over) 12%, transparent); }
 .del:hover, .del:focus-visible { background: color-mix(in srgb, var(--over) 22%, transparent); }
 .empty { color: var(--muted); font-size: 0.88rem; padding: 12px 0 4px; }
-.add { display: grid; grid-template-columns: 1fr 96px auto; gap: 8px; margin-top: 6px; }
-.add input { min-width: 0; }
 input, select {
   width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--bg); font-size: 16px;
@@ -318,9 +316,8 @@ form { display: flex; flex-direction: column; gap: 14px; }
 
 /* meal items + actions */
 .items li .nm small { display: block; color: var(--muted); font-size: 0.8rem; }
-.meal-actions { display: flex; gap: 8px; margin-top: 12px; }
+.meal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .meal-actions .btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; }
-.manual-lbl { font-size: 0.78rem; color: var(--muted); margin: 14px 0 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 
 /* food sheet */
 .food-sheet { height: 88vh; max-height: 88vh; display: flex; flex-direction: column; padding-bottom: 0; }
@@ -642,14 +639,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-11"></script>
-<script src="korisnici.js?v=2026.11.09-11"></script>
-<script src="db.js?v=2026.11.09-11"></script>
-<script src="foods.js?v=2026.11.09-11"></script>
+<script src="firebase-config.js?v=2026.11.09-12"></script>
+<script src="korisnici.js?v=2026.11.09-12"></script>
+<script src="db.js?v=2026.11.09-12"></script>
+<script src="foods.js?v=2026.11.09-12"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-11";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-12";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -854,7 +851,9 @@ form { display: flex; flex-direction: column; gap: 14px; }
         if (items.length) {
           html += '<ul class="items">';
           items.forEach(function (it, i) {
-            var sub = it.food || it.dish ? (it.dish ? "jelo · " + dec(it.qty) + " porc." : fmt(it.qty) + " " + it.unit) + " · P " + dec(it.p) + " · UH " + dec(it.c) + " · M " + dec(it.f) : "ručni unos";
+            var macros = " · P " + dec(it.p || 0) + " · UH " + dec(it.c || 0) + " · M " + dec(it.f || 0);
+            var sub = it.food || it.dish ? (it.dish ? "jelo · " + dec(it.qty) + " porc." : fmt(it.qty) + " " + it.unit) + macros
+              : "ručni unos" + (it.p != null || it.c != null || it.f != null ? macros : "");
             html += '<li data-edit="' + m.id + ':' + i + '"><span class="nm">' + esc(it.name) + '<small>' + sub + '</small></span><span class="kc">' + fmt(it.kcal) + ' kcal</span>' +
               '<button class="del" data-del="' + m.id + ':' + i + '" aria-label="Obriši ' + esc(it.name) + '"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></li>';
           });
@@ -862,11 +861,8 @@ form { display: flex; flex-direction: column; gap: 14px; }
         } else {
           html += '<p class="empty">Još ništa za ' + m.acc + '. Izaberi iz liste ili upiši ručno.</p>';
         }
-        html += '<div class="meal-actions"><button class="btn" data-pick="' + m.id + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Dodaj iz liste</button></div>';
-        html += '<p class="manual-lbl">Ili ručno</p><form class="add" data-add="' + m.id + '">' +
-          '<input id="n-' + m.id + '" name="name" placeholder="npr. Burek sa sirom" autocomplete="off" aria-label="Naziv">' +
-          '<input id="k-' + m.id + '" name="kcal" type="number" inputmode="numeric" min="0" placeholder="kcal" aria-label="Kalorije">' +
-          '<button class="btn" type="submit" aria-label="Dodaj">+</button></form>';
+        html += '<div class="meal-actions"><button class="btn" data-pick="' + m.id + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Dodaj iz liste</button>' +
+          '<button class="btn ghost" data-manual="' + m.id + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>Ručni unos</button></div>';
         html += '</div>';
       }
       html += '</div>';
@@ -879,6 +875,8 @@ form { display: flex; flex-direction: column; gap: 14px; }
     if (t) { var id = t.getAttribute("data-toggle"); var was = !!openMeals[id]; openMeals = {}; if (!was) openMeals[id] = true; render(); return; }
     var pk = e.target.closest("[data-pick]");
     if (pk) { openFoods("pick", { meal: pk.getAttribute("data-pick") }); return; }
+    var mn = e.target.closest("[data-manual]");
+    if (mn) { openFoods("manual", { meal: mn.getAttribute("data-manual") }); return; }
     var d = e.target.closest("[data-del]");
     if (d) {
       var p = d.getAttribute("data-del").split(":");
@@ -888,20 +886,6 @@ form { display: flex; flex-direction: column; gap: 14px; }
     }
     var ed = e.target.closest("[data-edit]");
     if (ed) { var q = ed.getAttribute("data-edit").split(":"); openFoods("edit", { meal: q[0], index: +q[1] }); }
-  });
-  $("meals").addEventListener("submit", function (e) {
-    var f = e.target.closest("[data-add]");
-    if (!f) return;
-    e.preventDefault();
-    var id = f.getAttribute("data-add");
-    var name = f.elements.name.value.trim();
-    var kcal = parseFloat(f.elements.kcal.value);
-    if (!name) { f.elements.name.focus(); return; }
-    if (!(kcal >= 0)) { f.elements.kcal.focus(); return; }
-    state.days[day] = state.days[day] || {};
-    (state.days[day][id] = state.days[day][id] || []).push({ name: name, kcal: Math.round(kcal) });
-    save(); render();
-    var n = $("n-" + id); if (n) n.focus();
   });
 
   $("prevDay").onclick = function () { if (day > windowStart()) { day = shift(day, -1); openMeals = {}; render(); } };
@@ -1074,6 +1058,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
   function openFoods(mode, opts) {
     opts = opts || {};
     fs = { mode: mode, meal: opts.meal || null, index: opts.index == null ? null : opts.index, view: "list", tab: "foods", query: "" };
+    if (mode === "manual") { fs.view = "manual"; fs.item = null; }   // nova ručna stavka
     if (mode === "edit") {
       var it = (state.days[day] || {})[fs.meal][fs.index];
       var dsh = it.dish && dishById(it.dish);
@@ -1531,24 +1516,47 @@ form { display: flex; flex-direction: column; gap: 14px; }
   }
 
   // --- ručni unos ---
+  // Ručni unos: samo za taj dan (ne čuva se u namirnicama, jelima ni u "nedavno").
+  // Stavka: { name, kcal } i, ako su upisani, p / c / f u gramima.
   function renderManual() {
-    var it = fs.item;
-    $("foodTitle").textContent = "Izmeni stavku";
+    var it = fs.item, isNew = !it;
+    $("foodTitle").textContent = isNew ? "Ručni unos · " + mealName(fs.meal) : "Izmeni stavku";
+    var v = function (x) { return x == null ? "" : dec(x); };
+    var nf = function (id, label, val, unit) {
+      return '<div class="field"><label for="' + id + '">' + label + '</label><div class="inwrap unitin"><input id="' + id + '" type="text" inputmode="decimal" autocomplete="off" value="' + val + '"><span class="u">' + unit + '</span></div></div>';
+    };
     $("foodBody").innerHTML =
-      '<form class="detail" id="manForm">' +
-        '<div class="field"><label for="manName">Naziv</label><input id="manName" value="' + esc(it.name) + '"></div>' +
-        '<div class="field"><label for="manKcal">Kalorije (kcal)</label><input id="manKcal" type="number" inputmode="numeric" min="0" value="' + it.kcal + '"></div>' +
-        '<div class="addrow"><button class="btn" type="submit">Sačuvaj</button><button class="btn danger" type="button" id="manDel">Obriši</button></div>' +
+      '<form class="detail" id="manForm" novalidate>' +
+        (isNew ? '<p class="src" style="margin:0">Za nešto što jedete samo ponekad. Doda se u kalorije ovog dana i ne čuva se u spisku namirnica.</p>' : "") +
+        '<div class="field"><label for="manName">Naziv</label><input id="manName" maxlength="120" autocomplete="off" placeholder="npr. Parče torte" value="' + (isNew ? "" : esc(it.name)) + '"></div>' +
+        nf("manKcal", "Kalorije", isNew ? "" : fmt(it.kcal), "kcal") +
+        '<div class="row3">' + nf("manP", "Proteini", isNew ? "" : v(it.p), "g") + nf("manC", "Ugljeni h.", isNew ? "" : v(it.c), "g") + nf("manF", "Masti", isNew ? "" : v(it.f), "g") + '</div>' +
+        '<p class="src" style="margin:-6px 0 0">Makroi nisu obavezni.</p>' +
+        '<p class="err" id="manErr"></p>' +
+        (isNew ? '<button class="btn" type="submit">Dodaj u ' + mealName(fs.meal).toLowerCase() + '</button>'
+               : '<div class="addrow"><button class="btn" type="submit">Sačuvaj</button><button class="btn danger" type="button" id="manDel">Obriši</button></div>') +
       '</form>';
     $("manForm").addEventListener("submit", function (e) {
       e.preventDefault();
-      var n = $("manName").value.trim(), k = parseFloat($("manKcal").value);
-      if (!n) return $("manName").focus();
-      if (!(k >= 0)) return $("manKcal").focus();
-      it.name = n; it.kcal = Math.round(k);
+      var num = function (id) { var t = String($(id).value).trim().replace(",", "."); return t === "" ? null : parseFloat(t); };
+      var n = $("manName").value.trim(), k = num("manKcal"), mac = { p: num("manP"), c: num("manC"), f: num("manF") };
+      var bad = Object.keys(mac).some(function (x) { return mac[x] != null && !(mac[x] >= 0 && mac[x] <= 1000); });
+      $("manErr").textContent = !n ? "Upiši naziv." : !(k >= 0 && k <= 10000) ? "Upiši kalorije (0 do 10.000)." : bad ? "Makroi su u gramima, od 0 do 1000." : "";
+      if ($("manErr").textContent) return;
+      var item = isNew ? {} : it;
+      item.name = n; item.kcal = Math.round(k);
+      Object.keys(mac).forEach(function (x) {               // samo upisani makroi; prazno polje briše vrednost
+        if (mac[x] != null) item[x] = Math.round(mac[x] * 10) / 10; else delete item[x];
+      });
+      if (isNew) {
+        state.days[day] = state.days[day] || {};
+        (state.days[day][fs.meal] = state.days[day][fs.meal] || []).push(item);
+        openMeals = {}; openMeals[fs.meal] = true;
+      }
       finish();
     });
-    $("manDel").onclick = function () { removeItem(); finish(); };
+    if ($("manDel")) $("manDel").onclick = function () { removeItem(); finish(); };
+    if (isNew && window.innerWidth > 640) $("manName").focus();
   }
 
   // ---------- prijava, nalog i sinhronizacija ----------
