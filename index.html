@@ -198,7 +198,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
 .field label, .field .lbl { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
 .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .field { min-width: 0; }
-input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: 46px; }
+.dmy { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; }
 .seg input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
 .seg label {
@@ -548,7 +548,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           <div class="field"><label for="height">Visina (cm)</label><input id="height" type="number" inputmode="numeric" min="100" max="250" placeholder="180"></div>
           <div class="field" id="weightField"><label for="weight">Težina (kg)</label><input id="weight" type="text" inputmode="decimal" autocomplete="off" placeholder="80"></div>
         </div>
-        <div class="field"><label for="dob">Datum rođenja</label><input id="dob" type="date"></div>
+        <div class="field"><label for="dob">Datum rođenja</label><input id="dob" class="dmy" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="DD/MM/GGGG"></div>
+        <div class="row2" id="lossFields">
+          <div class="field"><label for="rate">Mršavljenje nedeljno</label>
+            <select id="rate"><option value="0.2">0,2 kg</option><option value="0.3" selected>0,3 kg</option><option value="0.4">0,4 kg</option><option value="0.5">0,5 kg</option></select></div>
+          <div class="field"><label for="ppk">Proteini (g po kg)</label><div class="inwrap unitin"><input id="ppk" type="text" inputmode="decimal" autocomplete="off" placeholder="za 130 g"><span class="u">g/kg</span></div></div>
+        </div>
+        <p class="src" id="ppkHint"></p>
         <div class="field">
           <label for="activity">Koliko si fizički aktivan nedeljno?</label>
           <select id="activity">
@@ -632,15 +638,15 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-7"></script>
-<script src="korisnici.js?v=2026.11.09-7"></script>
-<script src="db.js?v=2026.11.09-7"></script>
-<script src="foods.js?v=2026.11.09-7"></script>
-<script src="jela.js?v=2026.11.09-7"></script>
+<script src="firebase-config.js?v=2026.11.09-8"></script>
+<script src="korisnici.js?v=2026.11.09-8"></script>
+<script src="db.js?v=2026.11.09-8"></script>
+<script src="foods.js?v=2026.11.09-8"></script>
+<script src="jela.js?v=2026.11.09-8"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-7";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-8";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -685,6 +691,13 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function keyOf(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function todayKey() { return keyOf(new Date()); }
   function parseKey(k) { var p = k.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  // "YYYY-MM-DD" <-> "DD/MM/GGGG"
+  function toDMY(k) { var p = String(k || "").split("-"); return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : ""; }
+  function fromDMY(v) {
+    var m = String(v || "").trim().match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/); if (!m) return "";
+    var d = new Date(+m[3], +m[2] - 1, +m[1]);
+    return d.getFullYear() === +m[3] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[1] ? keyOf(d) : "";
+  }
   function shift(k, n) { var d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); }
   var DAYS = ["nedelja", "ponedeljak", "utorak", "sreda", "četvrtak", "petak", "subota"];
   var MONTHS = ["januar", "februar", "mart", "april", "maj", "jun", "jul", "avgust", "septembar", "oktobar", "novembar", "decembar"];
@@ -717,14 +730,25 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   function goal() {
     if (!state.profile) return 2000;
     var t = Math.round(calc(state.profile).tdee);
-    return losing() ? Math.max(state.profile.sex === "m" ? 1500 : 1200, t - 500) : t;
+    // 1 kg masti ≈ 7.700 kcal, pa je 0,3 kg nedeljno ≈ 330 kcal manje dnevno
+    return losing() ? Math.max(state.profile.sex === "m" ? 1500 : 1200, t - deficit()) : t;
   }
-  // Proteini: 1,8 g/kg pri mršavljenju (čuva mišiće), 1,6 g/kg inače; pri visokom BMI računa se
+  function lossRate() { return state.profile && state.profile.rate > 0 ? state.profile.rate : 0.3; }   // kg nedeljno
+  function deficit() { return Math.round(lossRate() * 7700 / 7 / 10) * 10; }
+  // Proteini: g po kg (podešava se u profilu; 1,6 ako nije podešeno). Pri visokom BMI računa se
   // najviše kilaža koja odgovara BMI 27. Zaokruženo na 5 g.
+  function proteinWeight() { var p = state.profile, hm = p.height / 100; return Math.min(p.weight, 27 * hm * hm); }
+  function proteinPerKg() { return state.profile && state.profile.ppk > 0 ? state.profile.ppk : 1.6; }
   function proteinGoal() {
-    var p = state.profile; if (!p) return 0;
-    var hm = p.height / 100, w = Math.min(p.weight, 27 * hm * hm);
-    return Math.round(w * (losing() ? 1.8 : 1.6) / 5) * 5;
+    if (!state.profile) return 0;
+    return Math.round(proteinWeight() * proteinPerKg() / 5) * 5;
+  }
+  // Za mršavljenje: ako proteini po kg još nisu podešeni, početni cilj je 130 g dnevno.
+  function initProtein() {
+    var p = state.profile;
+    if (!p || !losing() || p.ppk > 0) return false;
+    p.ppk = Math.round(130 / proteinWeight() * 10) / 10;
+    return true;
   }
 
   // ---------- gauge ----------
@@ -892,7 +916,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     var p = state.profile;
     if (p) {
       $(p.sex === "m" ? "sexM" : "sexF").checked = true;
-      $("height").value = p.height; $("weight").value = dec(p.weight); $("dob").value = p.dob;
+      $("height").value = p.height; $("weight").value = dec(p.weight); $("dob").value = toDMY(p.dob);
+      $("rate").value = String(lossRate()); $("ppk").value = dec(proteinPerKg());
       $("activity").value = String(p.activity);
       $("qwIn").value = dec(p.weight);
       $("profSummary").innerHTML = '<span><b>Moji podaci</b>' + (p.sex === "m" ? "Muško" : "Žensko") + " · " + p.height + " cm · " +
@@ -903,6 +928,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
       $("profileForm").reset();
     }
     $("qwForm").hidden = !p;
+    $("lossFields").hidden = !losing();
+    ppkHint();
     $("weightField").hidden = !!p;          // težina se posle unosi gore, kao merenje
     $("profDetails").classList.toggle("first", !p);
     $("profDetails").open = !p;
@@ -923,19 +950,39 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
   $("profileForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var sex = (document.querySelector('input[name="sex"]:checked') || {}).value;
-    var h = parseFloat($("height").value), w = parseFloat(String($("weight").value).replace(",", ".")), dob = $("dob").value;
+    var h = parseFloat($("height").value), w = parseFloat(String($("weight").value).replace(",", ".")), dob = fromDMY($("dob").value);
+    var ppk = parseFloat(String($("ppk").value).replace(",", "."));
     var err = "";
     if (!sex) err = "Izaberi pol.";
     else if (!(h >= 100 && h <= 250)) err = "Unesi visinu između 100 i 250 cm.";
     else if (!(w >= 30 && w <= 300)) err = "Unesi težinu između 30 i 300 kg.";
-    else if (!dob || isNaN(new Date(dob)) || age(dob) < 10 || age(dob) > 110) err = "Unesi ispravan datum rođenja.";
+    else if (!dob || age(dob) < 10 || age(dob) > 110) err = "Unesi datum rođenja kao DD/MM/GGGG, npr. 17/04/1995.";
+    else if (losing() && $("ppk").value.trim() && !(ppk >= 0.8 && ppk <= 2.5)) err = "Proteini po kg treba da budu između 0,8 i 2,5.";
     $("err").textContent = err;
     if (err) return;
     state.profile = { sex: sex, height: h, weight: w, dob: dob, activity: parseFloat($("activity").value) };
+    if (losing()) {
+      state.profile.rate = parseFloat($("rate").value);
+      if (ppk > 0) state.profile.ppk = Math.round(ppk * 10) / 10; else initProtein();
+    }
     seedWeight();
     save(); render(); openSheet();          // posle čuvanja se podaci skupe
   });
 
+  function ppkHint() {
+    var v = parseFloat(String($("ppk").value).replace(",", ".")), p = state.profile;
+    $("ppkHint").textContent = losing() && p && v > 0 ? "= " + Math.round(proteinWeight() * v / 5) * 5 + " g proteina dnevno" : "";
+    $("ppkHint").hidden = !$("ppkHint").textContent;
+  }
+  $("ppk").addEventListener("input", ppkHint);
+  // DD/MM/GGGG: kose crte se ubacuju same
+  function dmyInput(el) {
+    el.addEventListener("input", function () {
+      var d = el.value.replace(/\D/g, "").slice(0, 8);
+      el.value = d.length > 4 ? d.slice(0, 2) + "/" + d.slice(2, 4) + "/" + d.slice(4) : d.length > 2 ? d.slice(0, 2) + "/" + d.slice(2) : d;
+    });
+  }
+  dmyInput($("dob"));
   $("qwForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var kg = parseFloat(String($("qwIn").value).replace(",", "."));
@@ -952,8 +999,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         '<div class="res"><small>Dnevni cilj</small><b>' + fmt(goal()) + '</b><span>kcal · proteini ' + proteinGoal() + ' g</span></div>' +
       '</div>' +
       '<p class="note">Potrošnja sa aktivnošću je ' + fmt(r.tdee) + ' kcal (Mifflin-St Jeor). ' +
-        (losing() ? "Cilj je 500 kcal manje, za gubitak oko 0,5 kg nedeljno. Proteini 1,8 g po kg čuvaju mišiće dok se gubi mast."
-                  : "Cilj je održavanje težine. Proteini 1,6 g po kg.") + '</p>';
+        (losing() ? "Cilj je " + deficit() + " kcal manje, za gubitak oko " + dec(lossRate()) + " kg nedeljno. Proteini " + dec(proteinPerKg()) + " g po kg čuvaju mišiće dok se gubi mast."
+                  : "Cilj je održavanje težine. Proteini " + dec(proteinPerKg()) + " g po kg.") + ' Tempo i proteini se menjaju u „Moji podaci“.</p>';
   }
 
 
@@ -1542,6 +1589,7 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
           }
           personalReady = true;
           seedWeight();
+          if (initProtein()) metaDirty = true;
           updateStreak();                       // pre brisanja starih dana, da se niz ne izgubi
           KDB.deleteDays(pruneDays());
           KDB.savePersonal(state, push, teamDoc());
@@ -1855,8 +1903,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
     if (!smokeOn()) {
       html = '<p class="w-intro">Brojimo dane bez cigare i koliko je novca ušteđeno (' + PACK_PRICE + ' din za svaki dan, jedna kutija dnevno).</p>' +
         '<div class="smoke-date"><label class="lbl" for="smokeDate">Kad je bila poslednja cigara?</label>' +
-        '<input id="smokeDate" type="date" max="' + todayKey() + '" value="' + todayKey() + '">' +
-        '<button class="btn" type="button" id="smokeStart">Kreni sa brojanjem</button></div>';
+        '<input id="smokeDate" class="dmy" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="DD/MM/GGGG" value="' + toDMY(todayKey()) + '">' +
+        '<p class="err" id="smokeErr"></p><button class="btn" type="button" id="smokeStart">Kreni sa brojanjem</button></div>';
     } else {
       var n = smokeDays();
       html = '<div class="smoke-big"><b>' + n + '</b><p>' + (n === 1 ? "dan" : "dana") + ' od poslednje cigare!</p></div>' +
@@ -1864,13 +1912,15 @@ input[type="date"] { -webkit-appearance: none; appearance: none; display: block;
         '<div class="smoke-actions"><button class="btn danger relapse" type="button" id="relapse">' + SAD +
           '<span>' + gw("Prekršio", "Prekršila") + ' sam</span></button></div>' +
         '<details class="smoke-date"><summary class="src">Promeni datum poslednje cigare</summary>' +
-        '<input id="smokeDate" type="date" max="' + todayKey() + '" value="' + state.smoke.since + '">' +
-        '<button class="btn ghost" type="button" id="smokeStart">Sačuvaj datum</button></details>';
+        '<input id="smokeDate" class="dmy" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="DD/MM/GGGG" value="' + toDMY(state.smoke.since) + '">' +
+        '<p class="err" id="smokeErr"></p><button class="btn ghost" type="button" id="smokeStart">Sačuvaj datum</button></details>';
     }
     $("smokeBody").innerHTML = html;
+    dmyInput($("smokeDate"));
     $("smokeStart").onclick = function () {
-      var k = $("smokeDate").value;
+      var k = fromDMY($("smokeDate").value);
       if (k && k <= todayKey()) setSmokeSince(k);
+      else if ($("smokeErr")) $("smokeErr").textContent = "Unesi datum kao DD/MM/GGGG, najkasnije danas.";
     };
     if ($("relapse")) confirmClick($("relapse"), "Sigurno? Brojanje kreće od nule.", function () { setSmokeSince(todayKey()); });
   }
