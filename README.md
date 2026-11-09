@@ -12,7 +12,8 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Obroci**: doručak, ručak, večera, užina i ostalo. Dodavanje iz liste (g ili ml) ili ručno.
   Čuva se poslednjih 15 dana (strelicama gore se lista unazad); stariji dani se brišu,
   ali niz dana, profil, težina i namirnice i jela koje ste napravili ostaju zauvek.
-- **Vežbanje**: dugme ispod brzinomera; potrošene kalorije se dodaju na dnevni cilj.
+- **Vežbanje**: dugme ispod brzinomera; potrošene kalorije su bonus i ne menjaju dnevni cilj.
+- **Cilj**: za korisnike sa `cilj: "mrsavljenje"` u `korisnici.js` dnevni cilj je potrošnja − 500 kcal (ne ispod 1.200 / 1.500) i proteini 1,8 g/kg; ostali održavanje i 1,6 g/kg.
 - **Ekipa** (ikonica karike): vidimo jedno drugo: % današnjeg cilja, niz dana i dane bez cigare (ne i šta je ko jeo).
 - **Bez cigare** (ikonica cigare, za korisnike sa `cigare: true` u `korisnici.js`): dani od poslednje cigare i ušteđen novac (450 din dnevno); dugme „Prekršila sam“ vraća brojanje na nulu.
 - **Niz dana** (vatrica pored imena): broj uzastopnih dana sa bar jednim unetim obrokom.
