@@ -162,8 +162,9 @@ main {
 .items li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--line); cursor: pointer; }
 .items li .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .items li .kc { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
-.del { border: 0; background: none; color: var(--muted); width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
-.del:hover { color: var(--over); background: var(--bg); }
+.del { border: 0; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex: none;
+  color: var(--over); background: color-mix(in srgb, var(--over) 12%, transparent); }
+.del:hover, .del:focus-visible { background: color-mix(in srgb, var(--over) 22%, transparent); }
 .empty { color: var(--muted); font-size: 0.88rem; padding: 12px 0 4px; }
 .add { display: grid; grid-template-columns: 1fr 96px auto; gap: 8px; margin-top: 6px; }
 .add input { min-width: 0; }
@@ -343,7 +344,6 @@ form { display: flex; flex-direction: column; gap: 14px; }
   background: var(--surface); border-radius: 999px; padding: 1px 8px; font-variant-numeric: tabular-nums; }
 .panel .flist button { border-bottom-color: color-mix(in srgb, var(--tint) 22%, transparent); }
 .panel .flist li:last-child button { border-bottom: 0; }
-.panel.mine .tag { display: none; }
 .flist { list-style: none; margin: 0; padding: 0; }
 .flist button {
   width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line);
@@ -406,9 +406,10 @@ form { display: flex; flex-direction: column; gap: 14px; }
 .btotal b { font-family: var(--display); font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 .btotal small { grid-column: 1 / -1; color: var(--muted); font-variant-numeric: tabular-nums; }
 #foodList > .newdish:first-child { margin-top: 6px; }
-.tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; vertical-align: 2px;
-  background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tag.mine { background: color-mix(in srgb, var(--ok) 22%, transparent); }
+.tag { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 6px; border-radius: 50%; vertical-align: 1px;
+  font-size: 0.68rem; font-weight: 800; font-family: var(--display); line-height: 1;
+  background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--ink); }
+.tag.mine { background: color-mix(in srgb, var(--ok) 30%, transparent); }
 .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .unitin { position: relative; }
 .unitin input { padding-right: 44px; }
@@ -641,14 +642,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-10"></script>
-<script src="korisnici.js?v=2026.11.09-10"></script>
-<script src="db.js?v=2026.11.09-10"></script>
-<script src="foods.js?v=2026.11.09-10"></script>
+<script src="firebase-config.js?v=2026.11.09-11"></script>
+<script src="korisnici.js?v=2026.11.09-11"></script>
+<script src="db.js?v=2026.11.09-11"></script>
+<script src="foods.js?v=2026.11.09-11"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-10";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.09-11";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -1125,7 +1126,12 @@ form { display: flex; flex-direction: column; gap: 14px; }
     else renderManual();
   }
 
-  function tag(x) { return x.std ? "" : '<span class="tag' + (KDB.isMine(x) ? " mine" : "") + '">' + (KDB.isMine(x) ? "moje" : esc(x.createdByName || "korisnik")) + '</span>'; }
+  // ko je napravio: krug sa početnim slovom imena (zelen = ja)
+  function tag(x) {
+    if (x.std) return "";
+    var mine = KDB.isMine(x), name = mine ? (KDB.user ? KDB.user.name : "") : (x.createdByName || "?");
+    return '<span class="tag' + (mine ? " mine" : "") + '" title="Napravio/la: ' + esc(name) + '">' + esc(name.charAt(0).toUpperCase()) + '</span>';
+  }
   function row(f) {
     return '<li><button data-food="' + esc(f.id) + '"><span class="fn"><b>' + esc(f.name) + tag(f) + '</b><small>na 100 ' + f.unit +
       ' · P ' + dec(f.p) + ' · UH ' + dec(f.c) + ' · M ' + dec(f.f) + '</small></span>' +
