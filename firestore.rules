@@ -5,7 +5,8 @@ rules_version = '2';
 // Ko šta sme:
 //  - namirnice, jela: svi prijavljeni čitaju i dodaju; menja i briše samo autor
 //  - ekipa/{uid}: svi prijavljeni čitaju (ime, % cilja, niz dana, dani bez cigare); piše samo vlasnik
-//  - users/{uid}, users/{uid}/dani i users/{uid}/merenja: samo vlasnik
+//  - users/{uid}/dani (obroci): svi prijavljeni čitaju (pregled u Ekipi); piše i briše samo vlasnik
+//  - users/{uid} (profil, težina, cigare) i users/{uid}/merenja: samo vlasnik
 // Pored toga, svaki upis mora da ima samo poznata polja, pravog tipa i razumne veličine,
 // da niko ne bi mogao da ubaci smeće ili ogromne zapise.
 service cloud.firestore {
@@ -85,9 +86,11 @@ service cloud.firestore {
           && optNum(request.resource.data, 'mast', 100);
       }
 
-      // Obroci po danima i kalorije potrošene vežbanjem (aplikacija čuva poslednjih 15 dana)
+      // Obroci po danima i kalorije potrošene vežbanjem (aplikacija čuva poslednjih 15 dana).
+      // Čitaju svi prijavljeni (pregled obroka u Ekipi); upisuje i briše samo vlasnik.
       match /dani/{d} {
-        allow read, delete: if isOwner(uid);
+        allow read: if signedIn();
+        allow delete: if isOwner(uid);
         allow create, update: if isOwner(uid) && day(d)
           && request.resource.data.keys().hasOnly(['meals'])
           && request.resource.data.meals is map

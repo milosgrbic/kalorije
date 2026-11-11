@@ -278,6 +278,21 @@ form { display: flex; flex-direction: column; gap: 14px; }
 .tm-streak .flame { width: 22px; height: 22px; }
 .tm-streak.off { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
 .tm-streak small { font-family: var(--body); font-weight: 500; font-size: 0.68rem; color: var(--muted); }
+.tm[data-view] { cursor: pointer; }
+.tm[data-view]:focus-visible { outline: 2px solid var(--ok); outline-offset: 2px; }
+.tm-go { color: var(--muted); flex: none; margin-left: -6px; }
+.tv-back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; padding: 6px 12px; }
+.tv-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.tv-nav b { text-align: center; }
+.tv-nav .x:disabled { opacity: 0.35; }
+.tv-sum { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 12px; color: var(--muted); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.tv-sum b { color: var(--ink); }
+.tv-meal { background: var(--bg); border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; }
+.tv-meal h3 { display: flex; justify-content: space-between; gap: 8px; margin: 0; font-size: 0.98rem; }
+.tv-meal h3 span { color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tv-meal .items li { cursor: default; }
+.tv-meal .items li:last-child { border-bottom: 0; padding-bottom: 2px; }
+.tv-meal .empty { padding: 4px 0 0; margin: 0; }
 
 /* cigare */
 .smoke-big { text-align: center; padding: 8px 0 4px; }
@@ -651,14 +666,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.09-14"></script>
-<script src="korisnici.js?v=2026.11.09-14"></script>
-<script src="db.js?v=2026.11.09-14"></script>
-<script src="foods.js?v=2026.11.09-14"></script>
+<script src="firebase-config.js?v=2026.11.11-1"></script>
+<script src="korisnici.js?v=2026.11.11-1"></script>
+<script src="db.js?v=2026.11.11-1"></script>
+<script src="foods.js?v=2026.11.11-1"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.09-14";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.11-1";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -1704,9 +1719,10 @@ form { display: flex; flex-direction: column; gap: 14px; }
 
   // ---------- Ekipa ----------
   var FLAME = document.querySelector("#streakBadge .flame").outerHTML;
-  var teamUnsub = null, teamList = [];
+  var teamUnsub = null, teamList = [], teamView = null, teamSeq = 0;
   function openTeam() {
     if (!KDB.user) return;
+    teamView = null; $("teamTitle").textContent = "Ekipa";
     $("teamBody").innerHTML = '<p class="team-sum">Učitavam…</p>';
     $("teamOverlay").hidden = false; document.body.style.overflow = "hidden";
     if (personalReady) KDB.savePersonal(state, [], teamDoc());   // da i ti budeš ažuran na listi
@@ -1714,6 +1730,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
   }
   function closeTeam() {
     if (teamUnsub) { teamUnsub(); teamUnsub = null; }
+    teamView = null;
     $("teamOverlay").hidden = true; document.body.style.overflow = "";
   }
   $("openTeam").onclick = openTeam;
@@ -1722,6 +1739,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("teamOverlay").hidden) closeTeam(); });
 
   function renderTeam() {
+    if (teamView) return;   // otvoren je pregled obroka jedne osobe
     if (!teamList) {
       $("teamBody").innerHTML = '<p class="err">Ekipa trenutno nije dostupna. ' + esc(KDB.teamError || "") + '</p>';
       return;
@@ -1741,18 +1759,103 @@ form { display: flex; flex-direction: column; gap: 14px; }
     var html = '<p class="team-sum">Danas ' + (list.length === 2 ? (logged === 2 ? "ste oboje uneli obroke." : logged === 1 ? "je jedno od vas unelo obroke." : "još niko nije uneo obroke.") : "je " + logged + " od " + list.length + " unelo obroke.") + '</p><ul class="team">';
     list.forEach(function (m) {
       var pct = m.today ? m.pct : 0, cls = pct > 110 ? "over" : pct > 100 ? "near" : "";
-      html += '<li class="tm' + (m.uid === me ? " me" : "") + '"><span class="ava">' + esc(m.name.charAt(0)) + '</span>' +
+      html += '<li class="tm' + (m.uid === me ? " me" : "") + '" data-view="' + esc(m.uid) + '" data-name="' + esc(m.name) + '" role="button" tabindex="0" aria-label="Obroci: ' + esc(m.name) + '"><span class="ava">' + esc(m.name.charAt(0)) + '</span>' +
         '<div class="tm-main"><b>' + esc(m.name) + (m.uid === me ? " <small>(ti)</small>" : "") + '</b>' +
         '<div class="tbar"><i class="' + cls + '" style="width:' + Math.min(100, pct) + '%"></i></div>' +
         '<small>' + (pct > 0 ? pct + "% današnjeg cilja" : "Danas još ništa") + (m.best > 1 ? " · najbolji niz " + m.best : "") + '</small>' +
         (m.smoke >= 0 ? '<small class="tm-smoke">Bez cigare: ' + m.smoke + ' ' + daysWord(m.smoke) + '</small>' : "") + '</div>' +
         (m.active ? '<span class="tm-streak">' + FLAME + m.active + '<small>' + (m.active === 1 ? "dan" : "dana") + '</small></span>'
-                  : '<span class="tm-streak off">0<small>dana</small></span>') + '</li>';
+                  : '<span class="tm-streak off">0<small>dana</small></span>') +
+        '<svg class="tm-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></li>';
     });
     html += '</ul>';
     $("teamBody").innerHTML = html;
   }
   KDB.onChange(function (what) { if (what === "team" && teamUnsub) renderTeam(); });
+
+  // Pregled obroka jedne osobe — SAMO ČITANJE: nema dugmadi za izmenu, ništa se ne upisuje.
+  var TEAM_DAYS = 14;   // obroci se čuvaju 15 dana (danas + 14 unazad)
+  function openTeamView(uid, name) {
+    teamView = { uid: uid, name: name, day: todayKey() };
+    $("teamTitle").textContent = name;
+    loadTeamView();
+  }
+  function closeTeamView() {
+    teamView = null; $("teamTitle").textContent = "Ekipa";
+    renderTeam();
+  }
+  function tvDayLabel(k) {
+    var t = todayKey();
+    return k === t ? "Danas" : k === shift(t, -1) ? "Juče" : DAYS[parseKey(k).getDay()] + ", " + toDMY(k);
+  }
+  function loadTeamView() {
+    var v = teamView, seq = ++teamSeq;
+    renderTeamView(null);
+    var p = v.uid === KDB.myId() ? Promise.resolve(state.days[v.day] || {}) : KDB.loadDay(v.uid, v.day);
+    p.then(function (meals) { if (seq === teamSeq && teamView) renderTeamView(meals || {}); },
+           function (e) { if (seq === teamSeq && teamView) renderTeamView(null, e && e.message || "Greška"); });
+  }
+  function num0(x) { x = Number(x); return isFinite(x) && x > 0 ? x : 0; }
+  function renderTeamView(meals, err) {
+    var v = teamView, t = todayKey(), oldest = shift(t, -TEAM_DAYS);
+    var html = '<button class="btn ghost tv-back" id="teamBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>Ekipa</button>' +
+      '<div class="tv-nav"><button class="x" data-tvday="-1" aria-label="Prethodni dan"' + (v.day <= oldest ? " disabled" : "") + '><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>' +
+      '<b>' + tvDayLabel(v.day) + '</b>' +
+      '<button class="x" data-tvday="1" aria-label="Sledeći dan"' + (v.day >= t ? " disabled" : "") + '><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div>';
+    if (err) {
+      html += '<p class="err">Obroci trenutno nisu dostupni. ' + esc(err) + '</p>';
+    } else if (!meals) {
+      html += '<p class="team-sum">Učitavam…</p>';
+    } else {
+      var lists = {}, tot = { k: 0, p: 0, f: 0, c: 0 }, any = false;
+      MEALS.forEach(function (m) {
+        var l = Array.isArray(meals[m.id]) ? meals[m.id] : [];
+        if (m.id === "uzine" && Array.isArray(meals.ostalo)) l = l.concat(meals.ostalo);   // stari oblik
+        lists[m.id] = l.filter(function (it) { return it && typeof it === "object"; });
+        lists[m.id].forEach(function (it) { any = true; tot.k += num0(it.kcal); tot.p += num0(it.p); tot.f += num0(it.f); tot.c += num0(it.c); });
+      });
+      var ex = num0(meals.vezbanje);
+      html += '<p class="tv-sum"><span><b>' + fmt(tot.k) + '</b> kcal</span><span>P ' + fmt(tot.p) + ' g</span><span>UH ' + fmt(tot.c) + ' g</span><span>M ' + fmt(tot.f) + ' g</span>' +
+        (ex ? '<span>Vežbanje <b>' + fmt(ex) + '</b> kcal</span>' : "") + '</p>';
+      if (!any) html += '<p class="empty">' + (v.day === t ? "Danas još ništa nije uneto." : "Tog dana ništa nije uneto.") + '</p>';
+      else MEALS.forEach(function (m) {
+        var l = lists[m.id], mk = 0;
+        l.forEach(function (it) { mk += num0(it.kcal); });
+        html += '<div class="tv-meal"><h3>' + m.name + '<span>' + fmt(mk) + ' kcal</span></h3>';
+        if (!l.length) html += '<p class="empty">Ništa uneto</p>';
+        else {
+          html += '<ul class="items">';
+          l.forEach(function (it) {
+            var hasMac = it.p != null || it.c != null || it.f != null;
+            var macros = " · P " + dec(num0(it.p)) + " · UH " + dec(num0(it.c)) + " · M " + dec(num0(it.f));
+            var sub = it.dish ? "jelo · " + dec(num0(it.qty)) + " porc." + macros
+              : it.food ? fmt(num0(it.qty)) + " " + (it.unit === "ml" ? "ml" : "g") + macros
+              : "ručni unos" + (hasMac ? macros : "");
+            html += '<li><span class="nm">' + esc(String(it.name || "Bez naziva").slice(0, 120)) + '<small>' + sub + '</small></span><span class="kc">' + fmt(num0(it.kcal)) + ' kcal</span></li>';
+          });
+          html += '</ul>';
+        }
+        html += '</div>';
+      });
+    }
+    $("teamBody").innerHTML = html;
+  }
+  $("teamBody").addEventListener("click", function (e) {
+    var b;
+    if (teamView) {
+      if (e.target.closest("#teamBack")) { closeTeamView(); return; }
+      if ((b = e.target.closest("[data-tvday]")) && !b.disabled) {
+        teamView.day = shift(teamView.day, +b.getAttribute("data-tvday"));
+        loadTeamView();
+      }
+      return;
+    }
+    if ((b = e.target.closest("[data-view]"))) openTeamView(b.getAttribute("data-view"), b.getAttribute("data-name"));
+  });
+  $("teamBody").addEventListener("keydown", function (e) {
+    var b = !teamView && (e.key === "Enter" || e.key === " ") && e.target.closest("[data-view]");
+    if (b) { e.preventDefault(); openTeamView(b.getAttribute("data-view"), b.getAttribute("data-name")); }
+  });
 
   // ---------- težina ----------
   // Čuva se: prvo merenje, poslednjih 8 merenja i mesečni prosek za starija (jedan broj po mesecu).

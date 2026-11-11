@@ -15,7 +15,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
 - **Vežbanje**: okruglo dugme sa tegom u uglu brzinomera; potrošene kalorije su bonus i ne menjaju dnevni cilj.
 - **Cilj** (bira se u profilu, „Moji podaci“; početno iz `korisnici.js`): **mršavljenje** = potrošnja minus izabrani tempo (početno 0,3 kg nedeljno ≈ 330 kcal, ne ispod 1.200 / 1.500), proteini početno 130 g; **održavanje i mišići** = potrošnja + izabrani višak (početno 0), proteini početno 1,8 g/kg. Proteini se uvek mogu podesiti kao g po kg.
 - **Datumi** se unose kao DD/MM/GGGG.
-- **Ekipa** (ikonica karike): vidimo jedno drugo: % današnjeg cilja, niz dana i dane bez cigare (ne i šta je ko jeo).
+- **Ekipa** (ikonica karike): vidimo jedno drugo: % današnjeg cilja, niz dana i dane bez cigare. Dodir na osobu otvara njene obroke po danima (do 14 dana unazad), samo za gledanje: ništa se ne može menjati. Profil, težina i merenja ostaju privatni.
 - **Bez cigare** (dugme sa cigaretom i brojem dana u baneru, za korisnike sa `cigare: true` u `korisnici.js`): dani od poslednje cigare i ušteđen novac (450 din dnevno); dugme „Prekršila sam“ vraća brojanje na nulu.
 - **Niz dana** (vatrica pored imena): broj uzastopnih dana sa bar jednim unetim obrokom.
 - **Merenja**: težina i obimi (struk, kukovi, grudi, nadlaktica, butina, vrat, list); jednom nedeljno aplikacija ponudi merenje; u profilu je grafikon za svaku vrstu. Sva merenja se čuvaju zauvek.

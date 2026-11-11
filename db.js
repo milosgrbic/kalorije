@@ -111,6 +111,11 @@
     KDB.logout = function () { KDB.user = null; setSession(null); emit("auth"); return Promise.resolve(); };
     KDB.loadPersonal = function () { return Promise.resolve(null); };
     KDB.deleteDays = function () {};
+    // samo čitanje: obroci jednog dana (za pregled u Ekipi)
+    KDB.loadDay = function (uid, k) {
+      try { var x = JSON.parse(localStorage.getItem("kalorije.v1." + uid)); return Promise.resolve((x && x.days && x.days[k]) || {}); }
+      catch (e) { return Promise.resolve({}); }
+    };
     var measKey = function () { return "kalorije.merenja." + KDB.user.uid; };
     KDB.loadMeasures = function () {
       try { return Promise.resolve(JSON.parse(localStorage.getItem(measKey())) || {}); } catch (e) { return Promise.resolve({}); }
@@ -240,6 +245,12 @@
     if (!KDB.user) return Promise.resolve();
     return wrap(db.collection("users").doc(KDB.user.uid).collection("merenja").doc(d).set(fields, { merge: true }))
       .catch(function (e) { KDB.error = e.message; emit("auth"); });
+  };
+  // Samo čitanje obroka jednog dana bilo kog člana ekipe (pregled u Ekipi; ništa se ne upisuje)
+  KDB.loadDay = function (uid, k) {
+    if (!KDB.user) return Promise.resolve({});
+    return wrap(db.collection("users").doc(String(uid)).collection("dani").doc(k).get())
+      .then(function (s) { return s.exists ? (s.data().meals || {}) : {}; });
   };
   // stari dani (van 15 dana) se brišu iz baze
   KDB.deleteDays = function (keys) {
