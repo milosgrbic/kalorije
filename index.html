@@ -31,6 +31,7 @@
   --over: #c4442f;
   --ok: #2f8a4f;
   --warn: #c98a12;
+  --water: #2f7fc4;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
   --radius: 14px;
@@ -39,13 +40,13 @@
   :root:not([data-theme="light"]) {
     --bg: #101612; --surface: #18211b; --ink: #e7eee8; --muted: #9aab9e; --line: #2a362e;
     --brand: #173f29; --brand-ink: #e9f3ea; --accent: #f0b73c; --track: #26312a;
-    --over: #ec6a52; --ok: #5cc27e; --warn: #e8a92c; color-scheme: dark;
+    --over: #ec6a52; --ok: #5cc27e; --warn: #e8a92c; --water: #5aa9e6; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #101612; --surface: #18211b; --ink: #e7eee8; --muted: #9aab9e; --line: #2a362e;
   --brand: #173f29; --brand-ink: #e9f3ea; --accent: #f0b73c; --track: #26312a;
-  --over: #ec6a52; --ok: #5cc27e; --warn: #e8a92c; color-scheme: dark;
+  --over: #ec6a52; --ok: #5cc27e; --warn: #e8a92c; --water: #5aa9e6; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -134,6 +135,17 @@ main {
 .exfab b { font-family: var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .exfab b:empty { display: none; }
 .exfab.on { background: var(--ok); color: #fff; border-color: var(--ok); }
+.exfab.wfab { right: auto; left: 12px; color: var(--water); border-color: color-mix(in srgb, var(--water) 45%, transparent);
+  background: color-mix(in srgb, var(--water) 9%, var(--surface)); }
+.exfab.wfab.on { background: var(--water); color: #fff; border-color: var(--water); }
+.w-total { text-align: center; padding: 6px 0 2px; }
+.w-total b { display: block; font-family: var(--display); font-weight: 800; font-size: 3rem; line-height: 1; color: var(--water); font-variant-numeric: tabular-nums; }
+.w-total small { color: var(--muted); }
+.w-add { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.w-add .btn { background: color-mix(in srgb, var(--water) 14%, var(--surface)); color: var(--water); border: 1px solid color-mix(in srgb, var(--water) 40%, transparent); }
+.w-man .btn { width: auto; padding: 0 20px; align-self: stretch; margin: 0; }
+.w-row { display: flex; gap: 8px; }
+.w-row .btn { flex: 1; }
 .hint {
   margin-top: 12px; font-size: 0.85rem; color: var(--muted); text-align: center;
 }
@@ -490,6 +502,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     </div>
 
     <section class="gauge-card" aria-label="Dnevni unos kalorija">
+      <button class="exfab wfab" id="waterBtn" type="button" aria-label="Voda"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3 3.6 6 7.2 6 10.5a6 6 0 01-12 0c0-3.3 3-6.9 6-10.5z"/></svg><b id="waterVal"></b></button>
       <button class="exfab" id="exBtn" type="button" aria-label="Vežbanje"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg><b id="exVal"></b></button>
       <div class="gauge">
         <svg id="gaugeSvg" viewBox="-28 4 356 178"role="img" aria-labelledby="gaugeLabel">
@@ -624,6 +637,31 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
+<div class="overlay" id="waterOverlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="waterTitle">
+    <div class="sheet-head">
+      <h2 id="waterTitle">Voda</h2>
+      <button class="x" id="waterClose" aria-label="Zatvori"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <form id="waterForm" novalidate>
+      <div class="w-total"><b id="waterTotal">0 ml</b><small id="waterSub">popijeno</small></div>
+      <div class="w-add">
+        <button class="btn" type="button" data-water="250">+250 ml</button>
+        <button class="btn" type="button" data-water="500">+500 ml</button>
+        <button class="btn" type="button" data-water="1000">+1 L</button>
+      </div>
+      <div class="field"><label for="waterIn">Ručno</label>
+        <div class="qty w-man"><div class="inwrap"><input id="waterIn" type="text" inputmode="numeric" autocomplete="off" placeholder="npr. 330"><span class="u">ml</span></div>
+        <button class="btn" type="submit">Dodaj</button></div></div>
+      <p class="err" id="waterErr"></p>
+      <div class="w-row">
+        <button class="btn ghost" type="button" id="waterUndo" hidden>Poništi poslednje</button>
+        <button class="btn danger" type="button" id="waterDel" hidden>Obriši sve</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="overlay" id="smokeOverlay" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="smokeTitle">
     <div class="sheet-head">
@@ -666,14 +704,14 @@ form { display: flex; flex-direction: column; gap: 14px; }
   </div>
 </div>
 
-<script src="firebase-config.js?v=2026.11.11-1"></script>
-<script src="korisnici.js?v=2026.11.11-1"></script>
-<script src="db.js?v=2026.11.11-1"></script>
-<script src="foods.js?v=2026.11.11-1"></script>
+<script src="firebase-config.js?v=2026.11.15-1"></script>
+<script src="korisnici.js?v=2026.11.15-1"></script>
+<script src="db.js?v=2026.11.15-1"></script>
+<script src="foods.js?v=2026.11.15-1"></script>
 <script>
 (function () {
   "use strict";
-  var APP_VERSION = "2026.11.11-1";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
+  var APP_VERSION = "2026.11.15-1";   // menja se alatom alati/nova-verzija.py pri svakoj objavi
   var MEALS = [
     { id: "dorucak", name: "Doručak", acc: "doručak", icon: '<path d="M3 11h15a3 3 0 010 6h-1M3 11v4a6 6 0 006 6h3a6 6 0 006-6M7 3v4M11 3v4M15 3v4"/>' },
     { id: "rucak",   name: "Ručak",   acc: "ručak",   icon: '<path d="M3 12h18M5 12a7 7 0 0014 0M12 5v2M8 6l1 2M16 6l-1 2"/>' },
@@ -848,6 +886,10 @@ form { display: flex; flex-direction: column; gap: 14px; }
     $("exVal").textContent = burned ? fmt(burned) + " kcal" : "";
     $("exBtn").classList.toggle("on", !!burned);
     $("exBtn").setAttribute("aria-label", burned ? "Vežbanje: " + fmt(burned) + " kcal" : "Dodaj vežbanje");
+    var wml = waterOn(day);
+    $("waterVal").textContent = wml ? waterFmt(wml) : "";
+    $("waterBtn").classList.toggle("on", !!wml);
+    $("waterBtn").setAttribute("aria-label", wml ? "Voda: " + waterFmt(wml) : "Dodaj vodu");
     $("sGoal").textContent = fmt(g);
     $("sEaten").textContent = fmt(eaten);
     var left = g - eaten;
@@ -1814,10 +1856,10 @@ form { display: flex; flex-direction: column; gap: 14px; }
         lists[m.id] = l.filter(function (it) { return it && typeof it === "object"; });
         lists[m.id].forEach(function (it) { any = true; tot.k += num0(it.kcal); tot.p += num0(it.p); tot.f += num0(it.f); tot.c += num0(it.c); });
       });
-      var ex = num0(meals.vezbanje);
+      var ex = num0(meals.vezbanje), wa = Math.min(WATER_MAX, num0(meals.voda));
       html += '<p class="tv-sum"><span><b>' + fmt(tot.k) + '</b> kcal</span><span>P ' + fmt(tot.p) + ' g</span><span>UH ' + fmt(tot.c) + ' g</span><span>M ' + fmt(tot.f) + ' g</span>' +
-        (ex ? '<span>Vežbanje <b>' + fmt(ex) + '</b> kcal</span>' : "") + '</p>';
-      if (!any) html += '<p class="empty">' + (v.day === t ? "Danas još ništa nije uneto." : "Tog dana ništa nije uneto.") + '</p>';
+        (ex ? '<span>Vežbanje <b>' + fmt(ex) + '</b> kcal</span>' : "") + (wa ? '<span>Voda <b>' + waterFmt(wa) + '</b></span>' : "") + '</p>';
+      if (!any && !wa) html += '<p class="empty">' + (v.day === t ? "Danas još ništa nije uneto." : "Tog dana ništa nije uneto.") + '</p>';
       else MEALS.forEach(function (m) {
         var l = lists[m.id], mk = 0;
         l.forEach(function (it) { mk += num0(it.kcal); });
@@ -1895,7 +1937,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     return true;
   }
   function anyOpen() {
-    return ["overlay", "foodOverlay", "teamOverlay", "weightOverlay", "exOverlay", "smokeOverlay"].some(function (id) { return !$(id).hidden; });
+    return ["overlay", "foodOverlay", "teamOverlay", "weightOverlay", "exOverlay", "waterOverlay", "smokeOverlay"].some(function (id) { return !$(id).hidden; });
   }
   function maybeAskWeight() { if (weightDue() && !anyOpen()) openWeight(true); }
   function openWeight(prompted) {
@@ -2104,6 +2146,58 @@ form { display: flex; flex-direction: column; gap: 14px; }
     setBurned(v);
   });
 
+  // ---------- voda ----------
+  // Popijena voda (ml) čuva se u danu kao "voda", isto kao vežbanje (i briše se sa danom posle 15 dana).
+  var WATER_MAX = 20000;
+  function waterOn(k) { var dd = state.days[k]; return dd && dd.voda > 0 ? dd.voda : 0; }
+  function waterFmt(ml) { return ml >= 1000 ? dec2(ml / 1000) + " L" : fmt(ml) + " ml"; }
+  var waterUndo = [];
+  function openWater() {
+    waterUndo = [];
+    $("waterTitle").textContent = day === todayKey() ? "Voda danas" : "Voda · " + dateLabel(day).slice(0, -1);
+    $("waterIn").value = ""; $("waterErr").textContent = "";
+    renderWater();
+    $("waterOverlay").hidden = false; document.body.style.overflow = "hidden";
+  }
+  function closeWater() { $("waterOverlay").hidden = true; if (!anyOpen()) document.body.style.overflow = ""; }
+  function renderWater() {
+    var ml = waterOn(day);
+    $("waterTotal").textContent = waterFmt(ml);
+    $("waterSub").textContent = day === todayKey() ? "popijeno danas" : "popijeno tog dana";
+    $("waterUndo").hidden = !waterUndo.length;
+    $("waterDel").hidden = !ml;
+  }
+  function setWater(ml) {
+    ml = Math.max(0, Math.min(WATER_MAX, Math.round(ml)));
+    state.days[day] = state.days[day] || {};
+    if (ml > 0) state.days[day].voda = ml; else delete state.days[day].voda;
+    save(); render(); renderWater();
+  }
+  function addWater(ml) {
+    var cur = waterOn(day);
+    if (!(ml > 0) || cur + ml > WATER_MAX) { $("waterErr").textContent = "Unesi broj između 1 i " + fmt(WATER_MAX - cur) + " ml."; return; }
+    $("waterErr").textContent = "";
+    waterUndo.push(cur);
+    setWater(cur + ml);
+  }
+  $("waterBtn").onclick = openWater;
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("waterOverlay").hidden) closeWater(); });
+  $("waterClose").onclick = closeWater;
+  $("waterOverlay").addEventListener("click", function (e) {
+    if (e.target === this) return closeWater();
+    var c = e.target.closest("[data-water]"); if (c) addWater(+c.getAttribute("data-water"));
+  });
+  $("waterUndo").onclick = function () { if (waterUndo.length) setWater(waterUndo.pop()); };
+  $("waterDel").onclick = function () { waterUndo.push(waterOn(day)); setWater(0); };
+  $("waterForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var raw = String($("waterIn").value).trim().replace(",", ".");
+    var v = Math.round(parseFloat(raw) || 0);
+    if (!/^\d+([.]\d+)?$/.test(raw) || v <= 0) { $("waterErr").textContent = "Upiši količinu u ml, npr. 330."; return; }
+    addWater(v);
+    if (!$("waterErr").textContent) $("waterIn").value = "";
+  });
+
   // ---------- bez cigare ----------
   // state.smoke = { since: "YYYY-MM-DD" } — dan poslednje cigare; brojač kreće od tog dana.
   var PACK_PRICE = 450;   // dinara; jedna kutija dnevno
@@ -2215,6 +2309,7 @@ form { display: flex; flex-direction: column; gap: 14px; }
     // pregled: vežbanje, niz dana, cigare, telo
     var rows = [];
     if (burned) rows.push(["Vežbanje", fmt(burned) + " kcal potrošeno (bonus, ne menja cilj)"]);
+    if (waterOn(day)) rows.push(["Voda", waterFmt(waterOn(day))]);
     var sk = updateStreak();
     rows.push(["Niz dana", sk.count + " " + daysWord(sk.count) + " zaredom sa unetim obrocima · najbolji " + (state.best || sk.count)]);
     if (smokeOn()) rows.push(["Bez cigare", smokeDays() + " " + daysWord(smokeDays()) + " · ušteđeno " + fmt(smokeMoney()) + " din"]);

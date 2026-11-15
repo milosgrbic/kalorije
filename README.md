@@ -13,6 +13,7 @@ Radi u browseru i na telefonu (otvori sajt → „Dodaj na početni ekran“).
   Čuva se poslednjih 15 dana (strelicama gore se lista unazad); stariji dani se brišu,
   ali niz dana, profil, težina i namirnice i jela koje ste napravili ostaju zauvek.
 - **Vežbanje**: okruglo dugme sa tegom u uglu brzinomera; potrošene kalorije su bonus i ne menjaju dnevni cilj.
+- **Voda**: dugme sa kapljicom u levom uglu brzinomera; +250 ml, +500 ml, +1 L ili ručni unos. Popijena količina se vidi na dugmetu, čuva se uz taj dan (kao vežbanje) i ne utiče na kalorije.
 - **Cilj** (bira se u profilu, „Moji podaci“; početno iz `korisnici.js`): **mršavljenje** = potrošnja minus izabrani tempo (početno 0,3 kg nedeljno ≈ 330 kcal, ne ispod 1.200 / 1.500), proteini početno 130 g; **održavanje i mišići** = potrošnja + izabrani višak (početno 0), proteini početno 1,8 g/kg. Proteini se uvek mogu podesiti kao g po kg.
 - **Datumi** se unose kao DD/MM/GGGG.
 - **Ekipa** (ikonica karike): vidimo jedno drugo: % današnjeg cilja, niz dana i dane bez cigare. Dodir na osobu otvara njene obroke po danima (do 14 dana unazad), samo za gledanje: ništa se ne može menjati. Profil, težina i merenja ostaju privatni.

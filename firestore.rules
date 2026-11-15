@@ -86,7 +86,7 @@ service cloud.firestore {
           && optNum(request.resource.data, 'mast', 100);
       }
 
-      // Obroci po danima i kalorije potrošene vežbanjem (aplikacija čuva poslednjih 15 dana).
+      // Obroci po danima, kalorije potrošene vežbanjem i popijena voda u ml (aplikacija čuva poslednjih 15 dana).
       // Čitaju svi prijavljeni (pregled obroka u Ekipi); upisuje i briše samo vlasnik.
       match /dani/{d} {
         allow read: if signedIn();
@@ -94,8 +94,9 @@ service cloud.firestore {
         allow create, update: if isOwner(uid) && day(d)
           && request.resource.data.keys().hasOnly(['meals'])
           && request.resource.data.meals is map
-          && request.resource.data.meals.keys().hasOnly(['dorucak', 'rucak', 'vecera', 'uzine', 'ostalo', 'vezbanje'])
-          && (!('vezbanje' in request.resource.data.meals) || num(request.resource.data.meals.vezbanje, 5000));
+          && request.resource.data.meals.keys().hasOnly(['dorucak', 'rucak', 'vecera', 'uzine', 'ostalo', 'vezbanje', 'voda'])
+          && (!('vezbanje' in request.resource.data.meals) || num(request.resource.data.meals.vezbanje, 5000))
+          && (!('voda' in request.resource.data.meals) || num(request.resource.data.meals.voda, 20000));
       }
     }
   }
